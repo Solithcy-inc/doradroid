@@ -18,10 +18,13 @@ from discord.ext.commands import CommandNotFound
 from discord.ext import commands
 import mysql.connector as mariadb
 import doracoinsdatabase as dc
+from discord.utils import get
 
 #############
-global cursor, whitelist
+global cursor, whitelist, ranks
 
+with open('ranks.json') as json_file:
+    ranks = json.load(json_file)
 whitelist=[330287319749885954]
 db=dc.connect()
 cursor=db.cursor()
@@ -153,6 +156,24 @@ async def bal(ctx, user: discord.Member = None):
         await ctx.channel.send(embed=makeEmbed("Balance", str(getcoins(ctx.author))))
     else:
         await ctx.channel.send(embed=makeEmbed("{}'s Balance".format(user), str(getcoins(user))))
+
+@commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='shop')
+async def shop(ctx):
+    await ctx.channel.send("Shop", "There are no items in the shop at the moment!")
+
+@commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='buy')
+async def buy(ctx, *, rank=None):
+    if rank == None:
+        await ctx.channel.send("Error", "Please specify a rank to buy", colour=16711680)
+    elif rank in ranks:
+        if getcoins(user) >= ranks[rank]['cost']:
+            role = get(bot.get_guild(412536528561242113).roles, id=ranks[rank]['id'])
+            givecoins(ctx.author, -int(amount))
+            await bot.add_roles(ctx.author, role)
+    else:
+        await ctx.channel.send("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680)
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
