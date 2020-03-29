@@ -71,9 +71,10 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_message(ctx):
-    givecoins(ctx.author, random.randint(0,3))
     if ctx.content.startswith(prefix):
         await bot.process_commands(ctx)
+    else:
+        givecoins(ctx.author, random.randint(0,3))
 
 @bot.event
 async def on_ready():
