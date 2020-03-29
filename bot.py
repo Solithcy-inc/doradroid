@@ -20,8 +20,9 @@ import mysql.connector as mariadb
 import doracoinsdatabase as dc
 
 #############
-global cursor
+global cursor, whitelist
 
+whitelist=[330287319749885954]
 db=dc.connect()
 cursor=db.cursor()
 prefix="dd!"
@@ -58,6 +59,16 @@ class CustomCooldown:
 #############
 
 @bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error,commands.CommandOnCooldown):
+        await ctx.send(embed=makeEmbed("Cooooooldown", "Try again in {0:.2f} seconds.\nThis command has a {1:.1f} second cooldown.".format(error.retry_after, error.cooldown.per), colour=16711680))
+        return
+    if isinstance(error, CommandNotFound) or isinstance(error, commands.MissingPermissions):
+        return
+    raise error
+
+
+@bot.event
 async def on_ready():
     print('----------------------------')
     print('Logged in as')
@@ -69,6 +80,21 @@ async def on_ready():
 
 
 #############
+
+def makeEmbed(title = "", desc = "", image = None, footer = None, colour = None):
+    if colour != None:
+        e = discord.Embed(title=title, description=desc, colour=colour, timestamp=datetime.datetime.now())
+    else:
+        e = discord.Embed(title=title, description=desc, timestamp=datetime.datetime.now())
+    if image != None:
+        e.set_image(url=image)
+    if footer != None:
+        e.set_footer(text=footer)
+    else:
+        if random.randint(1, 15) == random.randint(1, 15):
+            e.set_footer(text="")
+    return e
+
 
 def givecoins(user, amount):
     global cursor
@@ -115,14 +141,32 @@ def getcoins(user):
 
 #############
 
-@bot.command(name='bal')
-async def bal(ctx):
-    await ctx.channel.send(str(getcoins(ctx.author)))
+@has_permissions(administrator=True)
+@bot.command(name='admin')
+async def admin(ctx):
+    await ctx.channel.send("yes")
 
-@bot.command(name='plus50')
-async def plus50(ctx):
-    givecoins(ctx.author, 50)
-    await ctx.channel.send("Given 50 coins")
+@commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='bal')
+async def bal(ctx, user: discord.Member = None):
+    if user == None:
+        await ctx.channel.send(e=makeEmbed("Balance", str(getcoins(ctx.author))))
+    else:
+        await ctx.channel.send(e=makeEmbed("{}'s Balance".format(user), str(getcoins(user))))
+
+@bot.command(name='givemoney')
+async def givemoney(ctx, amount = None, user: discord.Member = None):
+    global whitelist
+    if ctx.author.id in whitelist:
+        if amount == None:
+            await ctx.channel.send(e=makeEmbed("Error", "Please specify an amount of doracoins", colour=16711680))
+        elif user == None:
+            await ctx.channel.send(e=makeEmbed("Error", "Please specify a member", colour=16711680))
+        else:
+            givecoins(user, int(amount))
+            await ctx.channel.send(e=makeEmbed("Success", "Gave {0} {1} doracoins".format(user, amount), colour=1441536)))
+    else:
+        await ctx.channel.send(e=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
 
 
 bot.run(TOKEN)
