@@ -155,7 +155,7 @@ async def bal(ctx, user: discord.Member = None):
         await ctx.channel.send(embed=makeEmbed("{}'s Balance".format(user), str(getcoins(user))))
 
 @bot.command(name='givemoney')
-async def givemoney(ctx, amount = None, user: discord.Member = None):
+async def givemoney(ctx, user: discord.Member = None, amount = None):
     global whitelist
     if ctx.author.id in whitelist:
         if amount == None:
