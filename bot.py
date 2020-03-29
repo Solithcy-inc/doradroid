@@ -164,7 +164,7 @@ async def givemoney(ctx, amount = None, user: discord.Member = None):
             await ctx.channel.send(e=makeEmbed("Error", "Please specify a member", colour=16711680))
         else:
             givecoins(user, int(amount))
-            await ctx.channel.send(e=makeEmbed("Success", "Gave {0} {1} doracoins".format(user, amount), colour=1441536)))
+            await ctx.channel.send(e=makeEmbed("Success", "Gave {0} {1} doracoins".format(user, amount), colour=1441536))
     else:
         await ctx.channel.send(e=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
 
