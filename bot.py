@@ -74,7 +74,7 @@ async def on_message(ctx):
     if ctx.content.startswith(prefix):
         await bot.process_commands(ctx)
     else:
-        if ctx.channel.id==693892114634768456:
+        if ctx.channel.id==503303471433252887:
             role = get(bot.get_guild(412536528561242113).roles, id=693898081057636352)
             try:
                 await ctx.author.remove_roles(role)
