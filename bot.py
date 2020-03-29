@@ -29,9 +29,6 @@ bot = commands.AutoShardedBot(command_prefix=prefix)
 bot.remove_command("help")
 TOKEN=open("token.txt", "r").read()
 print(TOKEN)
-cursor.execute("SELECT * FROM doracoins;")
-records = cursor.fetchall()
-print(str(records))
 
 #############
 
@@ -76,26 +73,56 @@ async def on_ready():
 def givecoins(user, amount):
     global cursor
     # check if user has a doracoins account
-    try:
+    cursor.execute(
+        "SELECT userid, coins FROM doracoins"
+    )
+    exists=False
+    coins=0
+    for i in cursor.fetchall():
+        if str(i[0]) == str(user.id):
+            exists=True
+            coins=i[1]
+            break
+    if exists:
+        # user has account, update coin balance
         cursor.execute(
-            "SELECT * FROM doracoins WHERE userid = {0}".format(str(user.id))
+            "UPDATE doracoins SET coins = {1} WHERE userid = {0};".format(str(user.id),str(int(coins)+amount))
         )
-    except:
-        # user doesn't have an account, make one
+    else:
+        # user doesn't have an account, make one with the coin balance
         cursor.execute(
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
         )
+
+def getcoins(user):
+    global cursor
+    # check if user has a doracoins account
+    cursor.execute(
+        "SELECT * FROM doracoins"
+    )
+    exists=False
+    records=cursor.fetchall()
+    j=0
+    for i in records:
+        if str(i[1]) == str(user.id):
+            exists=True
+            j=i[2]
+            break
+    if exists:
+        return int(j)
     else:
-        # user has account, update coin balance
-        cursor.execute(
-            "UPDATE doracoins SET coins = {1} WHERE userid = {0};".format(str(user.id),str(amount))
-        )
+        return 0
 
 #############
 
-@bot.command(name='yes')
-async def yes(ctx):
+@bot.command(name='bal')
+async def bal(ctx):
+    await ctx.channel.send(str(getcoins(ctx.author)))
+
+@bot.command(name='plus50')
+async def plus50(ctx):
     givecoins(ctx.author, 50)
+    await ctx.channel.send("Given 50 coins")
 
 
 bot.run(TOKEN)
