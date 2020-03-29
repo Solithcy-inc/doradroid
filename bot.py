@@ -150,23 +150,23 @@ async def admin(ctx):
 @bot.command(name='bal')
 async def bal(ctx, user: discord.Member = None):
     if user == None:
-        await ctx.channel.send(e=makeEmbed("Balance", str(getcoins(ctx.author))))
+        await ctx.channel.send(embed=makeEmbed("Balance", str(getcoins(ctx.author))))
     else:
-        await ctx.channel.send(e=makeEmbed("{}'s Balance".format(user), str(getcoins(user))))
+        await ctx.channel.send(embed=makeEmbed("{}'s Balance".format(user), str(getcoins(user))))
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, amount = None, user: discord.Member = None):
     global whitelist
     if ctx.author.id in whitelist:
         if amount == None:
-            await ctx.channel.send(e=makeEmbed("Error", "Please specify an amount of doracoins", colour=16711680))
+            await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of doracoins", colour=16711680))
         elif user == None:
-            await ctx.channel.send(e=makeEmbed("Error", "Please specify a member", colour=16711680))
+            await ctx.channel.send(embed=makeEmbed("Error", "Please specify a member", colour=16711680))
         else:
             givecoins(user, int(amount))
-            await ctx.channel.send(e=makeEmbed("Success", "Gave {0} {1} doracoins".format(user, amount), colour=1441536))
+            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} doracoins".format(user, amount), colour=1441536))
     else:
-        await ctx.channel.send(e=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
+        await ctx.channel.send(embed=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
 
 
 bot.run(TOKEN)
