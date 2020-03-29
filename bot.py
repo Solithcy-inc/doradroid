@@ -32,7 +32,6 @@ prefix="dd!"
 bot = commands.AutoShardedBot(command_prefix=prefix)
 bot.remove_command("help")
 TOKEN=open("token.txt", "r").read()
-print(TOKEN)
 
 #############
 
@@ -73,6 +72,8 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(ctx):
     givecoins(ctx.author, random.randint(0,3))
+    if ctx.content.startswith(prefix):
+        await bot.process_commands(ctx)
 
 @bot.event
 async def on_ready():
