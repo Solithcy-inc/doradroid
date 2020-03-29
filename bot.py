@@ -164,6 +164,10 @@ async def bal(ctx, user: discord.Member = None):
 @bot.command(name='shop')
 async def shop(ctx):
     await ctx.channel.send("Shop", "There are no items in the shop at the moment!")
+    # msg=""
+    # for i in ranks:
+    #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
+    # await ctx.channel.send("Shop", "{}".format(msg))
 
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='buy')
