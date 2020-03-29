@@ -16,10 +16,11 @@ import asyncio
 import logging
 from discord.ext.commands import CommandNotFound
 from discord.ext import commands
-import pymysql
+import mysql.connector as mariadb
 import doracoinsdatabase as dc
 
 #############
+global cursor
 
 db=dc.connect()
 cursor=db.cursor()
@@ -28,6 +29,9 @@ bot = commands.AutoShardedBot(command_prefix=prefix)
 bot.remove_command("help")
 TOKEN=open("token.txt", "r").read()
 print(TOKEN)
+cursor.execute("SELECT * FROM doracoins;")
+records = cursor.fetchall()
+print(str(records))
 
 #############
 
@@ -56,7 +60,42 @@ class CustomCooldown:
 
 #############
 
+@bot.event
+async def on_ready():
+    print('----------------------------')
+    print('Logged in as')
+    print(bot.user)
+    print(bot.user.id)
+    print('----------------------------')
+    print('')
+    print('----------------------------')
+
 
 #############
+
+def givecoins(user, amount):
+    global cursor
+    # check if user has a doracoins account
+    try:
+        cursor.execute(
+            "SELECT * FROM doracoins WHERE userid = {0}".format(str(user.id))
+        )
+    except:
+        # user doesn't have an account, make one
+        cursor.execute(
+            "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
+        )
+    else:
+        # user has account, update coin balance
+        cursor.execute(
+            "UPDATE doracoins SET coins = {1} WHERE userid = {0};".format(str(user.id),str(amount))
+        )
+
+#############
+
+@bot.command(name='yes')
+async def yes(ctx):
+    givecoins(ctx.author, 50)
+
 
 bot.run(TOKEN)
