@@ -70,6 +70,9 @@ async def on_command_error(ctx, error):
         return
     raise error
 
+@bot.event
+async def on_message(ctx):
+    givecoins(ctx.author, random.randint(0,3))
 
 @bot.event
 async def on_ready():
@@ -155,7 +158,7 @@ async def bal(ctx, user: discord.Member = None):
     if user == None:
         await ctx.channel.send(embed=makeEmbed("Balance", str(getcoins(ctx.author))))
     else:
-        await ctx.channel.send(embed=makeEmbed("{}'s Balance".format(user), str(getcoins(user))))
+        await ctx.channel.send(embed=makeEmbed("{}'s Balance".format(user.name), str(getcoins(user))))
 
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
@@ -185,7 +188,7 @@ async def givemoney(ctx, user: discord.Member = None, amount = None):
             await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of doracoins", colour=16711680))
         else:
             givecoins(user, int(amount))
-            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} doracoins".format(user, amount), colour=1441536))
+            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} doracoins".format(user.name, amount), colour=1441536))
     else:
         await ctx.channel.send(embed=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
 
