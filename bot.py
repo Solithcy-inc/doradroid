@@ -74,6 +74,12 @@ async def on_message(ctx):
     if ctx.content.startswith(prefix):
         await bot.process_commands(ctx)
     else:
+        if ctx.channel.id==693892114634768456:
+            role = get(bot.get_guild(412536528561242113).roles, id=693898081057636352)
+            try:
+                await ctx.author.remove_roles(role)
+            except:
+                pass
         givecoins(ctx.author, random.randint(0,3))
 
 @bot.event
@@ -165,7 +171,7 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    await ctx.channel.send("Shop", "There are no items in the shop at the moment!")
+    await ctx.channel.send(embed=makeEmbed("Shop", "Server Memories | 50,000 coins | let's you send **1** message in Server Memories."))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -175,14 +181,17 @@ async def shop(ctx):
 @bot.command(name='buy')
 async def buy(ctx, *, rank=None):
     if rank == None:
-        await ctx.channel.send("Error", "Please specify a rank to buy", colour=16711680)
+        await ctx.channel.send(embed=makeEmbed("Error", "Please specify a rank to buy", colour=16711680))
     elif rank in ranks:
-        if getcoins(user) >= ranks[rank]['cost']:
+        if getcoins(ctx.author) >= ranks[rank]['cost']:
             role = get(bot.get_guild(412536528561242113).roles, id=ranks[rank]['id'])
-            givecoins(ctx.author, -int(amount))
-            await bot.add_roles(ctx.author, role)
+            givecoins(ctx.author, -int(ranks[rank]['cost']))
+            await ctx.author.add_roles(role)
+            await ctx.channel.send(embed=makeEmbed("Success", "You've bought {}.".format(rank)))
+        else:
+            await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(ranks[rank]['cost'])), colour=16711680))
     else:
-        await ctx.channel.send("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680)
+        await ctx.channel.send(embed=makeEmbed("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680))
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
