@@ -158,10 +158,10 @@ async def bal(ctx, user: discord.Member = None):
 async def givemoney(ctx, user: discord.Member = None, amount = None):
     global whitelist
     if ctx.author.id in whitelist:
-        if amount == None:
-            await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of doracoins", colour=16711680))
-        elif user == None:
+        if user == None:
             await ctx.channel.send(embed=makeEmbed("Error", "Please specify a member", colour=16711680))
+        elif amount == None:
+            await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of doracoins", colour=16711680))
         else:
             givecoins(user, int(amount))
             await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} doracoins".format(user, amount), colour=1441536))
