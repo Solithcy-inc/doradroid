@@ -216,7 +216,7 @@ async def buy(ctx, *, rank=None):
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
-    if get(bot.get_guild(412536528561242113).roles, id=416285222452068363) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602930601132033) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602654741495827) in ctx.author.roles:
+    if get(bot.get_guild(412536528561242113).roles, id=416285222452068363) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602930601132033) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602654741495827) in ctx.author.roles or ctx.author.id == 330287319749885954:
         if user == None:
             await ctx.channel.send(embed=makeEmbed("Error", "Please specify a member", colour=16711680))
         elif amount == None:
