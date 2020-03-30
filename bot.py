@@ -173,6 +173,7 @@ def getcoins(user):
     else:
         return 0
 
+
 #############
 
 @has_permissions(administrator=True)
@@ -207,7 +208,7 @@ async def buy(ctx, *, rank=None):
             role = get(bot.get_guild(412536528561242113).roles, id=ranks[rank]['id'])
             givecoins(ctx.author, -int(ranks[rank]['cost']))
             await ctx.author.add_roles(role)
-            await ctx.channel.send(embed=makeEmbed("Success", "You've bought {}.".format(rank)))
+            await ctx.channel.send(embed=makeEmbed("Success", "You've bought {}.".format(rank), colour=1441536))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(ranks[rank]['cost'])), colour=16711680))
     else:
@@ -215,8 +216,7 @@ async def buy(ctx, *, rank=None):
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
-    global whitelist
-    if ctx.author.id in whitelist:
+    if get(bot.get_guild(412536528561242113).roles, id=416285222452068363) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602930601132033) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602654741495827) in ctx.author.roles:
         if user == None:
             await ctx.channel.send(embed=makeEmbed("Error", "Please specify a member", colour=16711680))
         elif amount == None:
@@ -226,6 +226,29 @@ async def givemoney(ctx, user: discord.Member = None, amount = None):
             await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} doracoins".format(user.name, amount), colour=1441536))
     else:
         await ctx.channel.send(embed=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
+
+
+
+@bot.command(name='leaderboard')
+async def leaderboard(ctx):
+    global cursor
+    cursor.execute(
+        "SELECT * FROM doracoins ORDER BY coins DESC LIMIT 15"
+    )
+    records=cursor.fetchall()
+    msg=""
+    j = 0
+    for i in records:
+        j += 1
+        if j == 1:
+            msg=msg+":first_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+        elif j == 2:
+            msg=msg+":second_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+        elif j == 3:
+            msg=msg+":third_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+        else:
+            msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, str(i[2]))
+    await ctx.channel.send(embed=makeEmbed("Leaderboard", msg, footer="sweats"))
 
 
 bot.run(TOKEN)
