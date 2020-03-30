@@ -104,6 +104,7 @@ async def on_message(ctx):
 
 @bot.event
 async def on_ready():
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game(name='dd!help'))
     print('----------------------------')
     print('Logged in as')
     print(bot.user)
@@ -254,5 +255,5 @@ async def leaderboard(ctx):
             msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, str(i[2]))
     await ctx.channel.send(embed=makeEmbed("Leaderboard", msg, footer="sweats"))
 
-await bot.change_presence(status=discord.Status.online, activity=discord.Game(name='dd!help'))
+
 bot.run(TOKEN)
