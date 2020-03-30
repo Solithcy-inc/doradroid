@@ -20,7 +20,9 @@ from discord.ext import commands
 import mysql.connector as mariadb
 import doracoinsdatabase as dc
 from discord.utils import get
-
+from discord import Webhook, RequestsWebhookAdapter
+#694219649331626075
+#O1LHhL3hwNrFUe2k2HQst_sGIiPbO5J96nu-57Ur8naHe6FAVKey7Xt8owSplSUQcbyJ
 #############
 global cursor, whitelist, ranks
 
@@ -150,6 +152,8 @@ def givecoins(user, amount):
             "UPDATE doracoins SET coins = {1} WHERE userid = {0};".format(str(user.id),str(int(coins)+amount))
         )
     else:
+        webhook = Webhook.partial(694219649331626075, 'O1LHhL3hwNrFUe2k2HQst_sGIiPbO5J96nu-57Ur8naHe6FAVKey7Xt8owSplSUQcbyJ', adapter=RequestsWebhookAdapter())
+        webhook.send(embed=makeEmbed("New user", "{} made an account".format(user)))
         # user doesn't have an account, make one with the coin balance
         cursor.execute(
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
