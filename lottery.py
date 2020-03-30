@@ -73,7 +73,7 @@ async def lottery():
                 break
         givecoins(bot.get_user(int(winner[1])), amount)
         await bot.get_channel(694223168721911848).send(embed=makeEmbed("Winner!", "{0} won the lottery! They've won {1} doracoins!".format(bot.get_user(int(winner[1])).mention, str(amount)), colour=1441536))
-        asyncio.sleep(172800)
+        await asyncio.sleep(172800)
 
 def givecoins(user, amount):
     global cursor
