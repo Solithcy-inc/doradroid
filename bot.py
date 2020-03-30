@@ -11,6 +11,7 @@ import datetime
 import requests
 import time
 import string
+import string
 from discord.ext import tasks
 import asyncio
 import logging
@@ -71,8 +72,8 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_message(ctx):
-    if ctx.content.startswith(prefix):
-        await bot.process_commands(ctx)
+    if ctx.author.bot:
+        pass
     else:
         if ctx.channel.id==503303471433252887:
             role = get(bot.get_guild(412536528561242113).roles, id=693898081057636352)
@@ -80,7 +81,26 @@ async def on_message(ctx):
                 await ctx.author.remove_roles(role)
             except:
                 pass
-        givecoins(ctx.author, random.randint(0,3))
+        if any(ele in ''.join(e for e in ctx.content.lower() if e.isalnum()) for ele in ["nigger", "nigga", "niggar", "nibba", "nibber", "nibbar"]):
+            message=ctx
+            await ctx.delete()
+            try:
+                await ctx.author.send("{0}, your message has been deleted and reported to staff.".format(message.author.mention))
+            except:
+                pass
+            await bot.get_channel(412548639798591488 ).send("{0} ({1}) might have said the n-word in {2} in the following message:\n`{3}`".format(message.author, message.author.mention, message.channel.mention, message.content))
+        elif any(ele in ''.join(e for e in ctx.content.lower() if e.isalnum()) for ele in ["chingchong", "chingchangchong"]):
+            message=ctx
+            await ctx.delete()
+            try:
+                await ctx.author.send("{0}, your message has been deleted and reported to staff.".format(message.author.mention))
+            except:
+                pass
+            await bot.get_channel(412548639798591488 ).send("{0} ({1}) might have said the cc word in {2} in the following message:\n`{3}`".format(message.author, message.author.mention, message.channel.mention, message.content))
+        if ctx.content.startswith(prefix):
+            await bot.process_commands(ctx)
+        else:
+            givecoins(ctx.author, random.randint(0,3))
 
 @bot.event
 async def on_ready():
