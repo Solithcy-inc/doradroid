@@ -102,7 +102,10 @@ async def on_message(ctx):
         if ctx.content.startswith(prefix):
             await bot.process_commands(ctx)
         else:
-            givecoins(ctx.author, random.randint(0,3))
+            if ctx.channel.id in [574247398855933963, 694220899246932101, 412670226321244161]:
+                pass
+            else:
+                givecoins(ctx.author, random.randint(0,3))
 
 @bot.event
 async def on_ready():
