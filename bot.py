@@ -126,7 +126,7 @@ def makeEmbed(title = "", desc = "", image = None, footer = None, colour = None)
         e.set_footer(text=footer)
     else:
         if random.randint(1, 15) == random.randint(1, 15):
-            e.set_footer(text="")
+            e.set_footer(text="Found a bug? Go to https://github.com/Solithcy-inc/doradroid/issues and report it!")
     return e
 
 
