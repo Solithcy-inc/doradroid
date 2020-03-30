@@ -228,8 +228,12 @@ async def givemoney(ctx, user: discord.Member = None, amount = None):
         await ctx.channel.send(embed=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
 
 
+@bot.command(name='help')
+async def help(ctx):
+    await ctx.channel.send(embed = makeEmbed("Help", "Doradroid **[help](https://dorami.xyz/bot/help/)**."))
 
 @bot.command(name='leaderboard', aliases=["lb","top"])
+@commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
 async def leaderboard(ctx):
     global cursor
     cursor.execute(
@@ -250,5 +254,5 @@ async def leaderboard(ctx):
             msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, str(i[2]))
     await ctx.channel.send(embed=makeEmbed("Leaderboard", msg, footer="sweats"))
 
-
+await bot.change_presence(status=discord.Status.online, activity=discord.Game(name='dd!help'))
 bot.run(TOKEN)
