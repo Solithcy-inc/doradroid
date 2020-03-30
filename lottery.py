@@ -49,7 +49,7 @@ def makeEmbed(title = "", desc = "", image = None, footer = None, colour = None)
             e.set_footer(text="")
     return e
 
-bot.event
+@bot.event
 async def on_ready():
     print('----------------------------')
     print('Logged in as')
@@ -65,11 +65,11 @@ async def lottery():
         cursor.execute(
             "SELECT * FROM doracoins"
         )
-        amount=random.randint(25000, 100000)
+        amount=random.randint(20000, 40000)
         people=cursor.fetchall()
         while True:
             winner=random.choice(people)
-            if bot.get_user(int(winner[1])) in bot.get_guild(412536528561242113).members:
+            if bot.get_user(int(winner[1])) in bot.get_guild(412536528561242113).members and get(bot.get_guild(412536528561242113).roles, id=533705293381632002) in bot.get_guild(412536528561242113).get_member(int(winner[1])).roles:
                 break
         givecoins(bot.get_user(int(winner[1])), amount)
         await bot.get_channel(694223168721911848).send(embed=makeEmbed("Winner!", "{0} won the lottery! They've won {1} doracoins!".format(bot.get_user(int(winner[1])).mention, str(amount)), colour=1441536))
