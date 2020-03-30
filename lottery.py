@@ -62,7 +62,6 @@ async def on_ready():
 async def lottery():
     await bot.wait_until_ready()
     while True:
-        asyncio.sleep(172800)
         cursor.execute(
             "SELECT * FROM doracoins"
         )
@@ -73,7 +72,8 @@ async def lottery():
             if bot.get_user(int(winner[1])) in bot.get_guild(412536528561242113).members:
                 break
         givecoins(bot.get_user(int(winner[1])), amount)
-        await bot.get_channel(693821443493986386).send(embed=makeEmbed("Winner!", "{0} won the lottery! They've won {1} doracoins!".format(bot.get_user(int(winner[1])).mention, str(amount)), colour=1441536))
+        await bot.get_channel(694223168721911848).send(embed=makeEmbed("Winner!", "{0} won the lottery! They've won {1} doracoins!".format(bot.get_user(int(winner[1])).mention, str(amount)), colour=1441536))
+        asyncio.sleep(172800)
 
 def givecoins(user, amount):
     global cursor
