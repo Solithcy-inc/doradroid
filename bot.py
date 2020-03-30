@@ -229,7 +229,7 @@ async def givemoney(ctx, user: discord.Member = None, amount = None):
 
 
 
-@bot.command(name='leaderboard')
+@bot.command(name='leaderboard', aliases=["lb","top"])
 async def leaderboard(ctx):
     global cursor
     cursor.execute(
