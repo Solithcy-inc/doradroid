@@ -56,7 +56,7 @@ async def on_ready():
     print(bot.user)
     print(bot.user.id)
     print('----------------------------')
-    print('Lottery has started')
+    print('')
     print('----------------------------')
 
 class CustomCooldown:
@@ -91,7 +91,7 @@ async def on_command_error(ctx, error):
         minutes = time // 60
         time %= 60
         seconds = time
-        await ctx.send(embed=makeEmbed("Cooooooldown", "Try again in {0}h, {1}m, {2}s.\nThis command has a 1d cooldown.".format(hour, minutes, seconds), colour=16711680))
+        await ctx.send(embed=makeEmbed("Cooooooldown", "Try again in {0:.0f}h, {1:.0f}m, {2:.1f}s.\nThis command has a 1d cooldown.".format(hour, minutes, seconds), colour=16711680))
         return
     if isinstance(error, CommandNotFound) or isinstance(error, commands.MissingPermissions):
         return
