@@ -229,7 +229,7 @@ def checkslots(slot):
             return 1.5
     else:
         return 0
-        
+
 def getcoins(user):
     global cursor
     # check if user has a doracoins account
@@ -419,6 +419,7 @@ async def slots(ctx, amount=None):
     elif int(amount) > getcoins(ctx.author):
         await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
     else:
+        givecoins(ctx.author, -int(amount))
         slotM = sm.SlotMachine(size=(5,1))
         message = await ctx.channel.send("{0}'s game".format(ctx.author.name))
         r = slotM()
