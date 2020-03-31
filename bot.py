@@ -320,8 +320,11 @@ async def gamble(ctx, amount=None):
         if card.value > card2.value:
             await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You won twice your bet!**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
             givecoins(ctx.author, int(amount)*2)
-        elif card.value <= card2.value:
+        elif card.value < card2.value:
             await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You lost!**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+        else:
+            givecoins(ctx.author, int(amount))
+            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You drew! Your coins were refunded.**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
 
 @bot.command(name='give', aliases=["share"])
 @commands.check(CustomCooldown(1,10, 1, 0, commands.BucketType.user, elements=[]))
