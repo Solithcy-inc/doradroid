@@ -22,6 +22,7 @@ import doracoinsdatabase as dc
 from discord.utils import get
 from discord import Webhook, RequestsWebhookAdapter
 from deck_of_cards import deck_of_cards as doc
+import slotmachine as sm
 #############
 global cursor, whitelist, ranks
 
@@ -176,6 +177,59 @@ def givecoins(user, amount):
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
         )
 
+def checkslots(slot):
+    j=""
+    amount=1
+    winner=""
+    for i in slot:
+        if j == i:
+            amount+=1
+            winner=i
+        else:
+            j = i
+    if winner == "<:bar:694563172664999966>":
+        if amount == 2:
+            return 2
+        else:
+            return 7
+    elif winner == "<:777:694563174141394965>":
+        if amount == 2:
+            return 1.5
+        else:
+            return 5
+    elif winner == "<:cherry:694563964234760264>":
+        if amount == 2:
+            return 1.3
+        else:
+            return 4
+    elif winner == "<:grapes:694563172333650111>":
+        if amount == 2:
+            return 1.2
+        else:
+            return 3.5
+    elif winner == "<:orange:694563172333519010>":
+        if amount == 2:
+            return 1.1
+        else:
+            return 3
+    elif winner == "<:bannana:694563172778246174>":
+        if amount == 2:
+            return 1.1
+        else:
+            return 2
+    elif winner == "<:melon:694563172689903616>":
+        if amount == 2:
+            return 1
+        else:
+            return 2
+    elif winner in ["<:apple:694563207888633936>", "<:lime:694563173025448017>"]:
+        if amount == 2:
+            return 1
+        else:
+            return 1.5
+    else:
+        return 0
+        
 def getcoins(user):
     global cursor
     # check if user has a doracoins account
@@ -215,7 +269,7 @@ async def bal(ctx, user: discord.Member = None):
 @bot.command(name='shop')
 async def shop(ctx):
     await ctx.channel.send(embed=makeEmbed("Shop", """Server Memories | 50,000 coins | Let's you send **1** message in Server Memories | `dd!buy servermemories`
-Custom Role | 25,000 coins | Gives you a custom role | `dd!buy custom`"""))
+Custom Role | 40,000 coins | Gives you a custom role | `dd!buy custom`"""))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -236,8 +290,8 @@ async def buy(ctx, rank=None, *, namecolour=None):
             await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(ranks[rank]['cost'])), colour=16711680))
     else:
         if rank=="custom":
-            if getcoins(ctx.author) < 25000:
-                await ctx.channel.send(embed=makeEmbed("Error", "You need to have 25000 coins", colour=16711680))
+            if getcoins(ctx.author) < 40000:
+                await ctx.channel.send(embed=makeEmbed("Error", "You need to have 40000 coins", colour=16711680))
             elif namecolour==None:
                 if hascustom(ctx.author):
                     await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
@@ -247,7 +301,7 @@ async def buy(ctx, rank=None, *, namecolour=None):
                 if hascustom(ctx.author):
                     await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
                 else:
-                    givecoins(ctx.author, -25000)
+                    givecoins(ctx.author, -40000)
                     givecustom(ctx.author)
                     nitrorole=get(bot.get_guild(412536528561242113).roles, id=585864265345269799)
                     role = await bot.get_guild(412536528561242113).create_role(name=namecolour, reason="Doradroid custom role")
@@ -345,5 +399,56 @@ async def give(ctx, user: discord.Member = None, amount = None):
             await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} coins".format(user.name, amount), colour=1441536))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
+
+@bot.command(name='slots')
+@commands.check(CustomCooldown(1, 5, 1, 0, commands.BucketType.user, elements=[]))
+async def slots(ctx, amount=None):
+    if amount == None:
+        await ctx.channel.send("""Rates:
+<:bar:694563172664999966> <:bar:694563172664999966>: x2.0 bet | <:bar:694563172664999966> <:bar:694563172664999966> <:bar:694563172664999966> x7.0 bet
+<:777:694563174141394965> <:777:694563174141394965>: x1.5 bet | <:777:694563174141394965> <:777:694563174141394965> <:777:694563174141394965> x5.0 bet
+<:cherry:694563964234760264> <:cherry:694563964234760264>: x1.3 bet | <:cherry:694563964234760264> <:cherry:694563964234760264> <:cherry:694563964234760264> x4.0 bet
+<:grapes:694563172333650111> <:grapes:694563172333650111>: x1.2 bet | <:grapes:694563172333650111> <:grapes:694563172333650111> <:grapes:694563172333650111> x3.5 bet
+<:orange:694563172333519010> <:orange:694563172333519010>: x1.1 bet | <:orange:694563172333519010> <:orange:694563172333519010> <:orange:694563172333519010> x3.0 bet
+<:bannana:694563172778246174> <:bannana:694563172778246174>: x1.1 bet | <:bannana:694563172778246174> <:bannana:694563172778246174> <:bannana:694563172778246174> x2.0 bet
+<:melon:694563172689903616> <:melon:694563172689903616>: x1.0 bet | <:melon:694563172689903616> <:melon:694563172689903616> <:melon:694563172689903616> x2.0 bet
+<:lime:694563173025448017> <:lime:694563173025448017>: x1.0 bet | <:lime:694563173025448017> <:lime:694563173025448017> <:lime:694563173025448017> x1.5 bet
+<:apple:694563207888633936> <:apple:694563207888633936>: x1.0 bet | <:apple:694563207888633936> <:apple:694563207888633936> <:apple:694563207888633936> x1.5 bet""")
+    elif int(amount) < 10:
+        await ctx.channel.send(embed=makeEmbed("Error", "The minimum bet is 10", colour=16711680))
+    elif int(amount) > getcoins(ctx.author):
+        await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
+    else:
+        slotM = sm.SlotMachine(size=(5,1))
+        message = await ctx.channel.send("{0}'s game".format(ctx.author.name))
+        r = slotM()
+        msg=""
+        for i in r[0]:
+            msg=msg+i+" "
+        await asyncio.sleep(.5)
+        await message.edit(content="{0}'s game\n{1}".format(ctx.author.name, msg))
+        for j in range(0, 2):
+            r = slotM()
+            msg=""
+            for i in r[0]:
+                msg=msg+i+" "
+            await asyncio.sleep(.1)
+            await message.edit(content="{0}'s game\n{1}".format(ctx.author.name, msg))
+        r = slotM()
+        msg=""
+        for i in r[0]:
+            msg=msg+i+" "
+        await asyncio.sleep(.3)
+        await message.edit(content="{0}'s game\n{1}".format(ctx.author.name, msg))
+        multi = checkslots(r[0])
+        await asyncio.sleep(.5)
+        if multi == 0:
+            await message.edit(content="{0}'s game\n{1}\n**You lost!**".format(ctx.author.name, msg))
+        else:
+            await message.edit(content="{0}'s game\n{1}\n**You won x{2} of your bet!**".format(ctx.author.name, msg, str(multi)))
+        givecoins(ctx.author, round(int(amount)*multi))
+
+
+
 
 bot.run(TOKEN)
