@@ -249,7 +249,10 @@ async def buy(ctx, rank=None, *, namecolour=None):
                 else:
                     givecoins(ctx.author, -25000)
                     givecustom(ctx.author)
-                    role = await bot.get_guild(412536528561242113).create_role(name=namecolour)
+                    nitrorole=get(bot.get_guild(412536528561242113).roles, id=585864265345269799)
+                    role = await bot.get_guild(412536528561242113).create_role(name=namecolour, reason="Doradroid custom role")
+                    pos=nitrorole.position
+                    await role.edit(position=pos, reason="Doradroid custom role - moving to top")
                     await ctx.author.add_roles(role)
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought a custom role.", colour=1441536))
         else:
