@@ -101,7 +101,7 @@ async def on_message(ctx):
         if ctx.content.startswith(prefix):
             await bot.process_commands(ctx)
         else:
-            if ctx.channel.id in [574247398855933963, 694220899246932101, 412670226321244161]:
+            if ctx.channel.id in [574247398855933963, 694220899246932101, 412670226321244161, 694532375480107100]:
                 pass
             else:
                 givecoins(ctx.author, random.randint(0,3))
@@ -296,7 +296,7 @@ async def leaderboard(ctx):
     await ctx.channel.send(embed=makeEmbed("Leaderboard", msg, footer="sweats"))
 
 @bot.command(name='gamble', aliases=["bet"])
-@commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
+@commands.check(CustomCooldown(1, 15, 1, 0, commands.BucketType.user, elements=[]))
 async def gamble(ctx, amount=None):
     if amount == None:
         await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of coins", colour=16711680))
