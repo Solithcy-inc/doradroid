@@ -1,3 +1,4 @@
 *.ftpconfig
 token.txt
 doracoinsdatabase.py
+slots.py
