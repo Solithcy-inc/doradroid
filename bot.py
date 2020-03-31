@@ -21,8 +21,7 @@ import mysql.connector as mariadb
 import doracoinsdatabase as dc
 from discord.utils import get
 from discord import Webhook, RequestsWebhookAdapter
-#694219649331626075
-#O1LHhL3hwNrFUe2k2HQst_sGIiPbO5J96nu-57Ur8naHe6FAVKey7Xt8owSplSUQcbyJ
+from deck_of_cards import deck_of_cards as doc
 #############
 global cursor, whitelist, ranks
 
@@ -135,6 +134,21 @@ def makeEmbed(title = "", desc = "", image = None, footer = None, colour = None)
             e.set_footer(text="Found a bug? Go to https://github.com/Solithcy-inc/doradroid/issues and report it!")
     return e
 
+def hascustom(user):
+    global cursor
+    cursor.execute(
+        "SELECT hascustom FROM doracoins WHERE userid = {0};".format(str(user.id))
+    )
+    if cursor.fetchone()[0] == 1:
+        return True
+    else:
+        return False
+
+def givecustom(user):
+    global cursor
+    cursor.execute(
+        "UPDATE doracoins SET hascustom = 1 WHERE userid = {0};".format(str(user.id))
+    )
 
 def givecoins(user, amount):
     global cursor
@@ -200,7 +214,8 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    await ctx.channel.send(embed=makeEmbed("Shop", "Server Memories | 50,000 coins | let's you send **1** message in Server Memories | `dd!buy servermemories`"))
+    await ctx.channel.send(embed=makeEmbed("Shop", """Server Memories | 50,000 coins | Let's you send **1** message in Server Memories | `dd!buy servermemories`
+Custom Role | 25,000 coins | Gives you a custom role | `dd!buy custom`"""))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -208,7 +223,7 @@ async def shop(ctx):
 
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='buy')
-async def buy(ctx, *, rank=None):
+async def buy(ctx, rank=None, *, namecolour=None):
     if rank == None:
         await ctx.channel.send(embed=makeEmbed("Error", "Please specify a rank to buy", colour=16711680))
     elif rank in ranks:
@@ -220,7 +235,25 @@ async def buy(ctx, *, rank=None):
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(ranks[rank]['cost'])), colour=16711680))
     else:
-        await ctx.channel.send(embed=makeEmbed("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680))
+        if rank=="custom":
+            if getcoins(ctx.author) < 25000:
+                await ctx.channel.send(embed=makeEmbed("Error", "You need to have 25000 coins", colour=16711680))
+            elif namecolour==None:
+                if hascustom(ctx.author):
+                    await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
+                else:
+                    await ctx.channel.send(embed=makeEmbed("Custom Role", "Please run the command again, but with the role name. i.e. `dd!buy custom i am awesome`"))
+            else:
+                if hascustom(ctx.author):
+                    await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
+                else:
+                    givecoins(ctx.author, -25000)
+                    givecustom(ctx.author)
+                    role = await bot.get_guild(412536528561242113).create_role(name=namecolour)
+                    await ctx.author.add_roles(role)
+                    await ctx.channel.send(embed=makeEmbed("Success", "You've bought a custom role.", colour=1441536))
+        else:
+            await ctx.channel.send(embed=makeEmbed("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680))
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
@@ -262,5 +295,49 @@ async def leaderboard(ctx):
             msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, str(i[2]))
     await ctx.channel.send(embed=makeEmbed("Leaderboard", msg, footer="sweats"))
 
+@bot.command(name='gamble', aliases=["bet"])
+@commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
+async def gamble(ctx, amount=None):
+    if amount == None:
+        await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of coins", colour=16711680))
+    elif int(amount) <= 0:
+        await ctx.channel.send(embed=makeEmbed("Error", "Choose a number higher then 0", colour=16711680))
+    elif int(amount) > getcoins(ctx.author):
+        await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
+    else:
+        givecoins(ctx.author, -int(amount))
+        message = await ctx.channel.send("Drawing cards")
+        deck = doc.DeckOfCards()
+        card = deck.give_random_card()
+        card2 = deck.give_random_card()
+        suits={0:"♠", 1:"♥", 2:"♦", 3:"♣"}
+        values={1:"A", 2:"2", 3:"3", 4:"4", 5:"5", 6:"6", 7:"7", 8:"8", 9:"9", 10:"10", 11:"J", 12:"Q", 13:"K"}
+        await asyncio.sleep(1)
+        await message.edit(content="{1}'s game\nYou: {0}".format(suits[card.suit]+values[card.value],ctx.author.name))
+        await asyncio.sleep(1)
+        await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+        await asyncio.sleep(1)
+        if card.value > card2.value:
+            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You won twice your bet!**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+            givecoins(ctx.author, int(amount)*2)
+        elif card.value <= card2.value:
+            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You lost!**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+
+@bot.command(name='give', aliases=["share"])
+@commands.check(CustomCooldown(1,10, 1, 0, commands.BucketType.user, elements=[]))
+async def give(ctx, user: discord.Member = None, amount = None):
+    if user == None:
+        await ctx.channel.send(embed=makeEmbed("Error", "Please specify a member", colour=16711680))
+    elif amount == None:
+        await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of coins", colour=16711680))
+    else:
+        if int(amount) <= 0:
+            await ctx.channel.send(embed=makeEmbed("Error", "Choose a number higher then 0", colour=16711680))
+        elif getcoins(ctx.author) >= int(amount):
+            givecoins(ctx.author, -int(amount))
+            givecoins(user, int(amount))
+            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} coins".format(user.name, amount), colour=1441536))
+        else:
+            await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
 
 bot.run(TOKEN)
