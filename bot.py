@@ -306,7 +306,7 @@ async def gamble(ctx, amount=None):
         await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
     else:
         givecoins(ctx.author, -int(amount))
-        message = await ctx.channel.send("Drawing cards")
+        message = await ctx.channel.send("{0}'s game".format(ctx.author.name))
         deck = doc.DeckOfCards()
         card = deck.give_random_card()
         card2 = deck.give_random_card()
