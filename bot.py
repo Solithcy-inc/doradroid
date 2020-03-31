@@ -269,7 +269,7 @@ async def bal(ctx, user: discord.Member = None):
 @bot.command(name='shop')
 async def shop(ctx):
     await ctx.channel.send(embed=makeEmbed("Shop", """Server Memories | 50,000 coins | Let's you send **1** message in Server Memories | `dd!buy servermemories`
-Custom Role | 40,000 coins | Gives you a custom role | `dd!buy custom`"""))
+"""))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -288,29 +288,29 @@ async def buy(ctx, rank=None, *, namecolour=None):
             await ctx.channel.send(embed=makeEmbed("Success", "You've bought {}.".format(rank), colour=1441536))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(ranks[rank]['cost'])), colour=16711680))
+    # else:
+    #     if rank=="custom":
+    #         if getcoins(ctx.author) < 40000:
+    #             await ctx.channel.send(embed=makeEmbed("Error", "You need to have 40000 coins", colour=16711680))
+    #         elif namecolour==None:
+    #             if hascustom(ctx.author):
+    #                 await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
+    #             else:
+    #                 await ctx.channel.send(embed=makeEmbed("Custom Role", "Please run the command again, but with the role name. i.e. `dd!buy custom i am awesome`"))
+    #         else:
+    #             if hascustom(ctx.author):
+    #                 await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
+    #             else:
+    #                 givecoins(ctx.author, -40000)
+    #                 givecustom(ctx.author)
+    #                 nitrorole=get(bot.get_guild(412536528561242113).roles, id=585864265345269799)
+    #                 role = await bot.get_guild(412536528561242113).create_role(name=namecolour, reason="Doradroid custom role")
+    #                 pos=nitrorole.position
+    #                 await role.edit(position=pos, reason="Doradroid custom role - moving to top")
+    #                 await ctx.author.add_roles(role)
+    #                 await ctx.channel.send(embed=makeEmbed("Success", "You've bought a custom role.", colour=1441536))
     else:
-        if rank=="custom":
-            if getcoins(ctx.author) < 40000:
-                await ctx.channel.send(embed=makeEmbed("Error", "You need to have 40000 coins", colour=16711680))
-            elif namecolour==None:
-                if hascustom(ctx.author):
-                    await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
-                else:
-                    await ctx.channel.send(embed=makeEmbed("Custom Role", "Please run the command again, but with the role name. i.e. `dd!buy custom i am awesome`"))
-            else:
-                if hascustom(ctx.author):
-                    await ctx.channel.send(embed=makeEmbed("Error", "You already have a custom role", colour=16711680))
-                else:
-                    givecoins(ctx.author, -40000)
-                    givecustom(ctx.author)
-                    nitrorole=get(bot.get_guild(412536528561242113).roles, id=585864265345269799)
-                    role = await bot.get_guild(412536528561242113).create_role(name=namecolour, reason="Doradroid custom role")
-                    pos=nitrorole.position
-                    await role.edit(position=pos, reason="Doradroid custom role - moving to top")
-                    await ctx.author.add_roles(role)
-                    await ctx.channel.send(embed=makeEmbed("Success", "You've bought a custom role.", colour=1441536))
-        else:
-            await ctx.channel.send(embed=makeEmbed("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680))
+        await ctx.channel.send(embed=makeEmbed("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680))
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
