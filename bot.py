@@ -268,7 +268,7 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    await ctx.channel.send(embed=makeEmbed("Shop", """Server Memories | 50,000 coins | Let's you send **1** message in Server Memories | `dd!buy servermemories`
+    await ctx.channel.send(embed=makeEmbed("Shop", """Absolutely fucking nothing.
 """))
     # msg=""
     # for i in ranks:

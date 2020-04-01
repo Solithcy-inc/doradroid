@@ -125,7 +125,7 @@ def givecoins(user, amount):
 @bot.command(name='daily')
 async def daily(ctx):
     await ctx.channel.send(embed=makeEmbed("Daily", "You've recieved 3,500 coins"))
-    givecoins(ctx.author, 3500)
+    givecoins(ctx.author, 1500)
 
 def getcoins(user):
     global cursor
