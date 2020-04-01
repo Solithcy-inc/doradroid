@@ -124,7 +124,7 @@ def givecoins(user, amount):
 @commands.check(CustomCooldown(1,86400, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='daily')
 async def daily(ctx):
-    await ctx.channel.send(embed=makeEmbed("Daily", "You've recieved 3,500 coins"))
+    await ctx.channel.send(embed=makeEmbed("Daily", "You've recieved 1,500 coins"))
     givecoins(ctx.author, 1500)
 
 def getcoins(user):
