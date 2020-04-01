@@ -76,7 +76,7 @@ async def on_command_error(ctx, error):
 async def on_message(ctx):
     if ctx.author.bot:
         pass
-    elif ctx.guild is False:
+    elif ctx.guild == None:
         pass
     else:
         if ctx.channel.id==503303471433252887:
