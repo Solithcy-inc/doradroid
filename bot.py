@@ -25,7 +25,7 @@ from deck_of_cards import deck_of_cards as doc
 import slotmachine as sm
 #############
 global cursor, whitelist, ranks
-
+fishprices = {"psychrolutes":10000, "goldfish":750, "carp":10, "cod":10, "haddock":10, "siamese":1000, "pike":500, "megamouth":2500}
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
 whitelist=[330287319749885954]
@@ -75,6 +75,8 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(ctx):
     if ctx.author.bot:
+        pass
+    elif ctx.guild is False:
         pass
     else:
         if ctx.channel.id==503303471433252887:
@@ -177,6 +179,59 @@ def givecoins(user, amount):
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
         )
 
+def giveitem(user, item, amount):
+    global cursor
+    # check if user has a doracoins account
+    cursor.execute(
+        "SELECT userid, {} FROM inventory".format(item)
+    )
+    exists=False
+    coins=0
+    for i in cursor.fetchall():
+        if str(i[0]) == str(user.id):
+            exists=True
+            itemamount=i[1]
+            break
+    if exists:
+        # user has account, update inventory
+        cursor.execute(
+            "UPDATE inventory SET {2} = {1} WHERE userid = {0};".format(str(user.id),str(int(itemamount)+amount), item)
+        )
+    else:
+        webhook = Webhook.partial(694219649331626075, 'O1LHhL3hwNrFUe2k2HQst_sGIiPbO5J96nu-57Ur8naHe6FAVKey7Xt8owSplSUQcbyJ', adapter=RequestsWebhookAdapter())
+        webhook.send(embed=makeEmbed("New user", "{} made an inventory".format(user)))
+        # user doesn't have an account, make one with the inventory
+        cursor.execute(
+            "INSERT INTO inventory (userid, {2}) VALUES ({0}, {1});".format(str(user.id),str(amount), item)
+        )
+
+def getinv(user):
+    global cursor
+    # check if user has a doracoins account
+    cursor.execute(
+        "SELECT * FROM inventory WHERE userid={}".format(str(user.id))
+    )
+    records=cursor.fetchall()
+    if records!=[]:
+        j = 0
+        empty=True
+        dict1 = {}
+        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese"}
+        for i in records[0]:
+            if j in [0,1]:
+                pass
+            else:
+                if i != 0:
+                    empty=False
+                dict1[dict2[j]]=i
+            j+=1
+        if empty:
+            return {}
+        else:
+            return dict1
+    else:
+        return {}
+
 def checkslots(slot):
     j=""
     amount=1
@@ -268,7 +323,7 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    await ctx.channel.send(embed=makeEmbed("Shop", """Absolutely fucking nothing.
+    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 10 coins | `dd!buy bait [amount]`
 """))
     # msg=""
     # for i in ranks:
@@ -277,9 +332,9 @@ async def shop(ctx):
 
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='buy')
-async def buy(ctx, rank=None, *, namecolour=None):
+async def buy(ctx, rank=None, amount=None):
     if rank == None:
-        await ctx.channel.send(embed=makeEmbed("Error", "Please specify a rank to buy", colour=16711680))
+        await ctx.channel.send(embed=makeEmbed("Error", "Please specify something to buy", colour=16711680))
     elif rank in ranks:
         if getcoins(ctx.author) >= ranks[rank]['cost']:
             role = get(bot.get_guild(412536528561242113).roles, id=ranks[rank]['id'])
@@ -310,7 +365,23 @@ async def buy(ctx, rank=None, *, namecolour=None):
     #                 await ctx.author.add_roles(role)
     #                 await ctx.channel.send(embed=makeEmbed("Success", "You've bought a custom role.", colour=1441536))
     else:
-        await ctx.channel.send(embed=makeEmbed("Error", "The rank `{}` doesn't exist".format(rank), colour=16711680))
+        if rank == "bait":
+            if amount == None:
+                if getcoins(ctx.author) >= 10:
+                    giveitem(ctx.author, "bait", 1)
+                    givecoins(ctx.author, -10)
+                    await ctx.channel.send(embed=makeEmbed("Success", "You've bought 1 Fish Bait.", colour=1441536))
+                else:
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 10 coins", colour=16711680))
+            else:
+                if getcoins(ctx.author) >= 10*int(amount):
+                    giveitem(ctx.author, "bait", int(amount))
+                    givecoins(ctx.author, -10*int(amount))
+                    await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
+                else:
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(10*int(amount))), colour=16711680))
+        else:
+            await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
@@ -329,6 +400,114 @@ async def givemoney(ctx, user: discord.Member = None, amount = None):
 @bot.command(name='help')
 async def help(ctx):
     await ctx.channel.send(embed = makeEmbed("Help", "Doradroid **[help](https://dorami.xyz/bot/help/)**."))
+
+@bot.command(name='beg')
+@commands.check(CustomCooldown(1, 20, 1, 10, commands.BucketType.user, elements=[]))
+async def beg(ctx):
+    reasons = ["ha lol fuck you", "sorry cutie i can't afford it", "ew no ur too stanky", "im too poor", "I'm saving up for JoJo Siwa merch.", "I want to buy food, sorry", "heck you", "lol no", "i cant move help this isnt a joke i actually cant move ples call an ambulance", "i wouldnt give to the likes of you"]
+    names = ["Shywess", "A Furry", "An Antifurry", "Belle Delphine",  "Trump", "Elon Musk", "PewDiePie", "Pyrocynical", "Soli", "LazarBeam", "Santa", "Tooth Fairy", "A Brick", "Coronavirus", "Boris Johnson", "My Dog", "A Gay", "Doge", "Florida Man", "DanTDM", "A Homeless Man", "Danny Devito", "Bread Shearan", "A Lonely Neko", "Shrek", "Vladimir Gluten", "John Cena"]
+    if random.randint(1,3) != 1:
+        amount = random.randint(2, random.randint(15, 40))
+        givecoins(ctx.author, amount)
+        await ctx.channel.send("**{1}** has given **{2}** {0} coins!".format(amount, random.choice(names), ctx.author.name))
+    else:
+        await ctx.channel.send("**{1}**: {0}".format(random.choice(reasons), random.choice(names)))
+
+@bot.command(name='fish')
+@commands.check(CustomCooldown(1, 15, 1, 10, commands.BucketType.user, elements=[]))
+async def fish(ctx, rates=None):
+    if rates=="rates":
+        await ctx.channel.send("**Psychrolutes Marcidus**: 10,000\n**Megamouth Shark**: 2,500\n**Siamese Fighting Fish**: 1,000\n**Goldfish**: 750\n**Northern Pike**: 500\n**Haddock, Cod & Carp**: 10")
+    else:
+        try:
+            bait=getinv(ctx.author)['bait']
+        except:
+            bait=0
+        if bait<=0:
+            await ctx.channel.send("{}, you have no fish bait. Buy it in the shop!".format(ctx.author.mention))
+        else:
+            giveitem(ctx.author, "bait", -1)
+            chance=random.randint(1, 10000)
+            if chance <= 5:
+                giveitem(ctx.author, "psychrolutes", 1)
+                await ctx.channel.send(embed=makeEmbed("{}, you caught a Psychrolutes Marcidus! That's rare!".format(ctx.author.mention), image="https://i.pinimg.com/originals/48/95/71/489571c1fe232dbcef8a9a2e06a8372c.jpg"))
+            else:
+                chance=random.randint(1, 10000)
+                if chance <= 250:
+                    giveitem(ctx.author, "megamouth", 1)
+                    await ctx.channel.send("{}, you caught a Megamouth Shark!".format(ctx.author.mention))
+                else:
+                    chance=random.randint(1, 10000)
+                    if chance <= 500:
+                        giveitem(ctx.author, "siamese", 1)
+                        await ctx.channel.send("{}, you caught a Siamese Fighting Fish!".format(ctx.author.mention))
+                    else:
+                        chance=random.randint(1, 10000)
+                        if chance <= 1000:
+                            giveitem(ctx.author, "goldfish", 1)
+                            await ctx.channel.send("{}, you caught a Goldfish!".format(ctx.author.mention))
+                        else:
+                            chance=random.randint(1, 10000)
+                            if chance <= 1500:
+                                giveitem(ctx.author, "pike", 1)
+                                await ctx.channel.send("{}, you caught a Northern Pike!".format(ctx.author.mention))
+                            else:
+                                chance=random.randint(1, 10000)
+                                if chance <= 7500:
+                                    types=[['cod', 'Cod'],['carp', 'Carp'],['haddock', 'Haddock']]
+                                    thetype=random.choice(types)
+                                    giveitem(ctx.author, thetype[0], 1)
+                                    await ctx.channel.send("{1}, you caught a {0}!".format(thetype[1], ctx.author.mention))
+                                else:
+                                    await ctx.channel.send("{}, you didn't get a bite.".format(ctx.author.mention))
+
+@bot.command(name='inventory', aliases=["inv"])
+@commands.check(CustomCooldown(1, 5, 1, 0, commands.BucketType.user, elements=[]))
+async def inventory(ctx):
+    inv = getinv(ctx.author)
+    if inv == {}:
+        await ctx.channel.send(embed=makeEmbed("You don't have anything in your inventory", footer="Fucking pleb"))
+    else:
+        msg=""
+        for i in inv:
+            if inv[i] != 0:
+                if i == "psychrolutes":
+                    msg=msg+"**Psychrolutes Marcidus**: {}\n".format(inv[i])
+                elif i == "megamouth":
+                    msg=msg+"**Megamouth Shark**: {}\n".format(str(inv[i]))
+                elif i == "siamese":
+                    msg=msg+"**Siamese Fighting Fish**: {}\n".format(str(inv[i]))
+                elif i == "goldfish":
+                    msg=msg+"**Goldfish**: {}\n".format(str(inv[i]))
+                elif i == "pike":
+                    msg=msg+"**Northern Pike**: {}\n".format(str(inv[i]))
+                elif i == "cod":
+                    msg=msg+"**Cod**: {}\n".format(str(inv[i]))
+                elif i == "carp":
+                    msg=msg+"**Carp**: {}\n".format(str(inv[i]))
+                elif i == "haddock":
+                    msg=msg+"**Haddock**: {}\n".format(str(inv[i]))
+                elif i == "bait":
+                    msg=msg+"**Fish Bait**: {}\n".format(str(inv[i]))
+                else:
+                    msg=msg+"**__Unknown Item__**: {}\n".format(str(inv[i]))
+        await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
+
+@bot.command(name='sell')
+@commands.check(CustomCooldown(1,15, 1, 0, commands.BucketType.user, elements=[]))
+async def sell(ctx):
+    message = await ctx.channel.send("{} | Selling all your fish".format(ctx.author.name))
+    amount = 0
+    inv=getinv(ctx.author)
+    for i in inv:
+        try:
+            amount += fishprices[i]*inv[i]
+            giveitem(ctx.author, i, -inv[i])
+        except:
+            pass
+    await asyncio.sleep(1)
+    givecoins(ctx.author, amount)
+    await message.edit(content="{0} | You got {1} coins!".format(ctx.author.name, str(amount)))
 
 @bot.command(name='leaderboard', aliases=["lb","top"])
 @commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
