@@ -25,7 +25,7 @@ from deck_of_cards import deck_of_cards as doc
 import slotmachine as sm
 #############
 global cursor, whitelist, ranks
-fishprices = {"psychrolutes":10000, "goldfish":750, "carp":10, "cod":10, "haddock":10, "siamese":1000, "pike":500, "megamouth":2500}
+fishprices = {"psychrolutes":17500, "goldfish":750, "carp":10, "cod":10, "haddock":10, "siamese":1000, "pike":500, "megamouth":3750, "cyprinodon": 75000}
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
 whitelist=[330287319749885954]
@@ -216,7 +216,7 @@ def getinv(user):
         j = 0
         empty=True
         dict1 = {}
-        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese"}
+        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon"}
         for i in records[0]:
             if j in [0,1]:
                 pass
@@ -323,7 +323,7 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 10 coins | `dd!buy bait [amount]`
+    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 17 coins | `dd!buy bait [amount]`
 """))
     # msg=""
     # for i in ranks:
@@ -367,19 +367,19 @@ async def buy(ctx, rank=None, amount=None):
     else:
         if rank == "bait":
             if amount == None:
-                if getcoins(ctx.author) >= 10:
+                if getcoins(ctx.author) >= 17:
                     giveitem(ctx.author, "bait", 1)
-                    givecoins(ctx.author, -10)
+                    givecoins(ctx.author, -17)
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought 1 Fish Bait.", colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 10 coins", colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 17 coins", colour=16711680))
             else:
-                if getcoins(ctx.author) >= 10*int(amount):
+                if getcoins(ctx.author) >= 17*int(amount):
                     giveitem(ctx.author, "bait", int(amount))
-                    givecoins(ctx.author, -10*int(amount))
+                    givecoins(ctx.author, -17*int(amount))
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(10*int(amount))), colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(17*int(amount))), colour=16711680))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
@@ -414,10 +414,10 @@ async def beg(ctx):
         await ctx.channel.send("**{1}**: {0}".format(random.choice(reasons), random.choice(names)))
 
 @bot.command(name='fish')
-@commands.check(CustomCooldown(1, 15, 1, 10, commands.BucketType.user, elements=[]))
+@commands.check(CustomCooldown(1, 10, 1, 10, commands.BucketType.user, elements=[]))
 async def fish(ctx, rates=None):
     if rates=="rates":
-        await ctx.channel.send("**Psychrolutes Marcidus**: 10,000\n**Megamouth Shark**: 2,500\n**Siamese Fighting Fish**: 1,000\n**Goldfish**: 750\n**Northern Pike**: 500\n**Haddock, Cod & Carp**: 10")
+        await ctx.channel.send("**Cyprinodon Diabolis**: 75,000\n**Psychrolutes Marcidus**: 17,500\n**Megamouth Shark**: 3,750\n**Siamese Fighting Fish**: 1,000\n**Goldfish**: 750\n**Northern Pike**: 500\n**Haddock, Cod & Carp**: 10")
     else:
         try:
             bait=getinv(ctx.author)['bait']
@@ -427,39 +427,46 @@ async def fish(ctx, rates=None):
             await ctx.channel.send("{}, you have no fish bait. Buy it in the shop!".format(ctx.author.mention))
         else:
             giveitem(ctx.author, "bait", -1)
-            chance=random.randint(1, 10000)
-            if chance <= 5:
-                giveitem(ctx.author, "psychrolutes", 1)
-                await ctx.channel.send(embed=makeEmbed("{}, you caught a Psychrolutes Marcidus! That's rare!".format(ctx.author.mention), image="https://i.pinimg.com/originals/48/95/71/489571c1fe232dbcef8a9a2e06a8372c.jpg"))
+            chance=random.randint(1, 100000)
+            if chance <= 1:
+                print("Cyprinodon Diabolis captured")
+                giveitem(ctx.author, "cyprinodon", 1)
+                await ctx.channel.send(embed=makeEmbed("{}, you caught a Cyprinodon Diabolis! That's **ULTRA** rare!".format(ctx.author.mention), image="https://upload.wikimedia.org/wikipedia/commons/3/37/Cyprinodon_diabolis%2C_males.jpg"))
             else:
-                chance=random.randint(1, 10000)
-                if chance <= 250:
-                    giveitem(ctx.author, "megamouth", 1)
-                    await ctx.channel.send("{}, you caught a Megamouth Shark!".format(ctx.author.mention))
+                chance=random.randint(1, 100000)
+                if chance <= 150:
+                    print("Psychrolutes Marcidus captured")
+                    giveitem(ctx.author, "psychrolutes", 1)
+                    await ctx.channel.send(embed=makeEmbed("{}, you caught a Psychrolutes Marcidus! That's rare!".format(ctx.author.mention), image="https://i.pinimg.com/originals/48/95/71/489571c1fe232dbcef8a9a2e06a8372c.jpg"))
                 else:
-                    chance=random.randint(1, 10000)
-                    if chance <= 500:
-                        giveitem(ctx.author, "siamese", 1)
-                        await ctx.channel.send("{}, you caught a Siamese Fighting Fish!".format(ctx.author.mention))
+                    chance=random.randint(1, 100000)
+                    if chance <= 2500:
+                        giveitem(ctx.author, "megamouth", 1)
+                        await ctx.channel.send("{}, you caught a Megamouth Shark!".format(ctx.author.mention))
                     else:
-                        chance=random.randint(1, 10000)
-                        if chance <= 1000:
-                            giveitem(ctx.author, "goldfish", 1)
-                            await ctx.channel.send("{}, you caught a Goldfish!".format(ctx.author.mention))
+                        chance=random.randint(1, 100000)
+                        if chance <= 5000:
+                            giveitem(ctx.author, "siamese", 1)
+                            await ctx.channel.send("{}, you caught a Siamese Fighting Fish!".format(ctx.author.mention))
                         else:
-                            chance=random.randint(1, 10000)
-                            if chance <= 1500:
-                                giveitem(ctx.author, "pike", 1)
-                                await ctx.channel.send("{}, you caught a Northern Pike!".format(ctx.author.mention))
+                            chance=random.randint(1, 100000)
+                            if chance <= 10000:
+                                giveitem(ctx.author, "goldfish", 1)
+                                await ctx.channel.send("{}, you caught a Goldfish!".format(ctx.author.mention))
                             else:
-                                chance=random.randint(1, 10000)
-                                if chance <= 7500:
-                                    types=[['cod', 'Cod'],['carp', 'Carp'],['haddock', 'Haddock']]
-                                    thetype=random.choice(types)
-                                    giveitem(ctx.author, thetype[0], 1)
-                                    await ctx.channel.send("{1}, you caught a {0}!".format(thetype[1], ctx.author.mention))
+                                chance=random.randint(1, 100000)
+                                if chance <= 15000:
+                                    giveitem(ctx.author, "pike", 1)
+                                    await ctx.channel.send("{}, you caught a Northern Pike!".format(ctx.author.mention))
                                 else:
-                                    await ctx.channel.send("{}, you didn't get a bite.".format(ctx.author.mention))
+                                    chance=random.randint(1, 100000)
+                                    if chance <= 70000:
+                                        types=[['cod', 'Cod'],['carp', 'Carp'],['haddock', 'Haddock']]
+                                        thetype=random.choice(types)
+                                        giveitem(ctx.author, thetype[0], 1)
+                                        await ctx.channel.send("{1}, you caught a {0}!".format(thetype[1], ctx.author.mention))
+                                    else:
+                                        await ctx.channel.send("{}, you didn't get a bite.".format(ctx.author.mention))
 
 @bot.command(name='inventory', aliases=["inv"])
 @commands.check(CustomCooldown(1, 5, 1, 0, commands.BucketType.user, elements=[]))
@@ -489,6 +496,8 @@ async def inventory(ctx):
                     msg=msg+"**Haddock**: {}\n".format(str(inv[i]))
                 elif i == "bait":
                     msg=msg+"**Fish Bait**: {}\n".format(str(inv[i]))
+                elif i == "cyprinodon":
+                    msg=msg+"**Cyprinodon Diabolis**: {}\n".format(str(inv[i]))
                 else:
                     msg=msg+"**__Unknown Item__**: {}\n".format(str(inv[i]))
         await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
