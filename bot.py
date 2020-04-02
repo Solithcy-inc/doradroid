@@ -375,7 +375,7 @@ async def bal(ctx, user: discord.Member = None):
 async def shop(ctx):
     fishlim=getinv(ctx.author)['fishlim']
     await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 40 coins | `dd!buy bait [amount]`
-Fish Limit Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`""".format(str(fishlim), place_value(fishlim*100000), str(fishlim+1))))
+Fishing Rod Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`""".format(str(fishlim+1), place_value(round(2500*(1+1.5)**fishlim)), str(fishlim+1))))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -430,14 +430,15 @@ async def buy(ctx, rank=None, amount=None):
                     givecoins(ctx.author, -40*int(amount))
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(40*int(amount))), colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(40*int(amount)))), colour=16711680))
         elif rank == "fishlim":
             fishlim=getinv(ctx.author)['fishlim']
-            if getcoins(ctx.author) >= fishlim*100000:
+            if getcoins(ctx.author) >= round(2500*(1+1.5)**fishlim):
                 giveitem(ctx.author, "fishlim", 1)
-                await ctx.channel.send(embed=makeEmbed("Success", "You've bought Fish Limit Lvl {}.".format(str(fishlim)), colour=1441536))
+                givecoins(ctx.author, -round(2500*(1+1.5)**fishlim))
+                await ctx.channel.send(embed=makeEmbed("Success", "You've bought Fishing Rod Lvl {}.".format(str(fishlim+1)), colour=1441536))
             else:
-                await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(fishlim*100000)), colour=16711680))
+                await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(place_value(round(2500*(1+1.5)**fishlim))), colour=16711680)))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
