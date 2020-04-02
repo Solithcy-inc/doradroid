@@ -593,13 +593,25 @@ async def leaderboard(ctx):
     for i in records:
         j += 1
         if j == 1:
-            msg=msg+":first_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+            try:
+                msg=msg+":first_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+            except:
+                msg=msg+":first_place: `USER LEFT`: {0} doracoins\n".format(str(i[2]))
         elif j == 2:
-            msg=msg+":second_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+            try:
+                msg=msg+":second_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+            except:
+                msg=msg+":second_place: `USER LEFT`: {0} doracoins\n".format(str(i[2]))
         elif j == 3:
-            msg=msg+":third_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+            try:
+                msg=msg+":third_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+            except:
+                msg=msg+":third_place: `USER LEFT`: {1} doracoins\n".format(str(i[2]))
         else:
-            msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, str(i[2]))
+            try:
+                msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, str(i[2]))
+            except:
+                msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), "`USER LEFT`", str(i[2]))
     await ctx.channel.send(embed=makeEmbed("Leaderboard", msg, footer="sweats"))
 
 @bot.command(name='gamble', aliases=["bet"])
