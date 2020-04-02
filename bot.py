@@ -19,6 +19,7 @@ from discord.ext.commands import CommandNotFound
 from discord.ext import commands
 import mysql.connector as mariadb
 import doracoinsdatabase as dc
+import urllib.parse
 from discord.utils import get
 from discord import Webhook, RequestsWebhookAdapter
 from deck_of_cards import deck_of_cards as doc
@@ -29,6 +30,7 @@ fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddoc
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
 whitelist=[330287319749885954]
+triviaanswers={}
 db=dc.connect()
 cursor=db.cursor()
 prefix="dd!"
@@ -74,10 +76,18 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_message(ctx):
+    global triviaanswers
     if ctx.author.bot:
         pass
     elif ctx.guild == None:
         pass
+    elif str(ctx.author.id) in triviaanswers:
+        if ctx.content == triviaanswers[str(ctx.author.id)]["answer"]:
+            ctx.channel.send("Correct! You got {0} coins!".format(str(triviaanswers[str(ctx.author.id)]["reward"])))
+            givecoins(ctx.author.id, triviaanswers[str(ctx.author.id)]["reward"])
+        else:
+            ctx.channel.send("Wrong answer!")
+        del triviaanswers[str(ctx.author.id)]
     else:
         if ctx.channel.id==503303471433252887:
             role = get(bot.get_guild(412536528561242113).roles, id=693898081057636352)
@@ -219,7 +229,7 @@ def getinv(user):
         j = 0
         empty=True
         dict1 = {}
-        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna", 13:"fishlim"}
+        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna", 13:"fishlim", 14:"job"}
         for i in records[0]:
             if j in [0,1]:
                 pass
@@ -472,11 +482,51 @@ async def beg(ctx):
     else:
         await ctx.channel.send("**{1}**: {0}".format(random.choice(reasons), random.choice(names)))
 
+
+# @bot.command(name='work', aliases=['job'])
+# @commands.check(CustomCooldown(1, 15, 1, 43200, commands.BucketType.user, elements=[]))
+# async def work(ctx, arg=None):
+#     if ctx.message.guild.id!=693821442994995260:
+#         await ctx.channel.send("This command only works in the Doradroid server.")
+#     elif arg==None:
+#         jobid=getinv(ctx.author)['job']
+#         if jobid == 0:
+#             await ctx.channel.send("You don't have a job, choose from this list")
+#             await ctx.channel.send(embed=makeEmbed("Jobs", "Programmer | `dd!work programmer`"))
+#     elif arg=="programmer":
+#         jobid=getinv(ctx.author)['job']
+
+
+# @bot.command(name='trivia')
+# @commands.check(CustomCooldown(1, 12.5, 1, 12.5, commands.BucketType.user, elements=[]))
+# async def trivia(ctx):
+#     global triviaanswers
+#     r=requests.get("https://opentdb.com/api.php?amount=1&type=multiple")
+#     question=r.json()['results'][0]
+#     answers=[[question['correct_answer'], "y"], [question['incorrect_answers'][0], "n"], [question['incorrect_answers'][1],"y"], [question['incorrect_answers'][2], "n"]]
+#     random.shuffle(answers)
+#     a=answers[0][0]
+#     b=answers[1][0]
+#     c=answers[2][0]
+#     d=answers[3][0]
+#     correct="a"
+#     if answers[0][1] == "y":
+#         correct="a"
+#     elif answers[2][1] == "y":
+#         correct="b"
+#     elif answers[3][1] == "y":
+#         correct="c"
+#     elif answers[4][1] == "y":
+#         correct="d"
+#     reward=random.randint(1,500)
+#     await ctx.channel.send(embed = makeEmbed(question['question'], "**Category**: {0}\n**Difficulty**: {1}\n**Reward**: {6} coins\n**Answers**:\n>>> A. {2}\nB. {3}\nC. {4}\nD. {5}".format(question['category'], question['difficulty'], a, b, c, d, str(reward))))
+#     triviaanswers[str(ctx.author.id):{"answer":correct, "reward":reward}]
+
 @bot.command(name='fish')
 @commands.check(CustomCooldown(1, 12.5, 1, 12.5, commands.BucketType.user, elements=[]))
 async def fishcmd(ctx, rates=None):
     if rates=="rates":
-        await ctx.channel.send("**Cyprinodon Diabolis**: 150,000\n**Psychrolutes Marcidus**: 17,500\n**Megamouth Shark**: 3,250\n**Siamese Fighting Fish**: 750\n**Goldfish**: 500\n**Tuna**: 300\n**Northern Pike**: 250\n**Haddock, Cod & Carp**: 10")
+        await ctx.channel.send("**Cyprinodon Diabolis**: 150,000    |   0.001%\n**Psychrolutes Marcidus**: 17,500   |   0.05%\n**Megamouth Shark**: 3,250   |   0.75%\n**Siamese Fighting Fish**: 750   |   2.5%\n**Goldfish**: 500    |   10%\n**Tuna**: 300   |   12.5%\n**Northern Pike**: 250   |   15%\n**Haddock, Cod & Carp**: 10    |   70%")
     else:
         try:
             bait=getinv(ctx.author)['bait']
