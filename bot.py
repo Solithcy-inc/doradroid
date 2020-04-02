@@ -456,7 +456,7 @@ async def beg(ctx):
         await ctx.channel.send("**{1}**: {0}".format(random.choice(reasons), random.choice(names)))
 
 @bot.command(name='fish')
-@commands.check(CustomCooldown(1, 10, 1, 10, commands.BucketType.user, elements=[]))
+@commands.check(CustomCooldown(1, 17.5, 1, 17.5, commands.BucketType.user, elements=[]))
 async def fishcmd(ctx, rates=None):
     if rates=="rates":
         await ctx.channel.send("**Cyprinodon Diabolis**: 150,000\n**Psychrolutes Marcidus**: 17,500\n**Megamouth Shark**: 3,750\n**Siamese Fighting Fish**: 1,000\n**Goldfish**: 750\n**Northern Pike**: 500\n**Haddock, Cod & Carp**: 10")
