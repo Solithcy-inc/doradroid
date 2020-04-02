@@ -25,7 +25,7 @@ from deck_of_cards import deck_of_cards as doc
 import slotmachine as sm
 #############
 global cursor, whitelist, ranks
-fishprices = {"psychrolutes":17500, "goldfish":750, "carp":10, "cod":10, "haddock":10, "siamese":1000, "pike":500, "megamouth":3750, "cyprinodon": 150000}
+fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddock":10, "siamese":750, "pike":350, "megamouth":3250, "cyprinodon": 150000}
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
 whitelist=[330287319749885954]
@@ -462,7 +462,7 @@ async def beg(ctx):
 @commands.check(CustomCooldown(1, 12.5, 1, 12.5, commands.BucketType.user, elements=[]))
 async def fishcmd(ctx, rates=None):
     if rates=="rates":
-        await ctx.channel.send("**Cyprinodon Diabolis**: 150,000\n**Psychrolutes Marcidus**: 17,500\n**Megamouth Shark**: 3,750\n**Siamese Fighting Fish**: 1,000\n**Goldfish**: 750\n**Northern Pike**: 500\n**Haddock, Cod & Carp**: 10")
+        await ctx.channel.send("**Cyprinodon Diabolis**: 150,000\n**Psychrolutes Marcidus**: 17,500\n**Megamouth Shark**: 3,250\n**Siamese Fighting Fish**: 750\n**Goldfish**: 500\n**Northern Pike**: 250\n**Haddock, Cod & Carp**: 10")
     else:
         try:
             bait=getinv(ctx.author)['bait']
