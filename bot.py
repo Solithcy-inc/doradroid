@@ -318,12 +318,12 @@ def fish(ctx):
             return "psychrolutes"
         else:
             chance=random.randint(1, 100000)
-            if chance <= 2000:
+            if chance <= 1250:
                 giveitem(ctx.author, "megamouth", 1)
                 return "megamouth"
             else:
                 chance=random.randint(1, 100000)
-                if chance <= 3500:
+                if chance <= 2500:
                     giveitem(ctx.author, "siamese", 1)
                     return "siamese"
                 else:
