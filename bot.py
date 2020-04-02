@@ -27,7 +27,7 @@ import slotmachine as sm
 global cursor, whitelist, ranks
 fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddock":10, "siamese":750, "pike":350, "megamouth":3250, "cyprinodon": 150000}
 with open('ranks.json') as json_file:
-    ranks = json.load(json_file)
+        ranks = json.load(json_file)
 whitelist=[330287319749885954]
 db=dc.connect()
 cursor=db.cursor()
@@ -315,7 +315,7 @@ def fish(ctx):
         return "cyprinodon"
     else:
         chance=random.randint(1, 100000)
-        if chance <= 75:
+        if chance <= 50:
             print("Psychrolutes Marcidus captured")
             giveitem(ctx.author, "psychrolutes", 1)
             return "psychrolutes"
@@ -368,7 +368,7 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 50 coins | `dd!buy bait [amount]`
+    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 40 coins | `dd!buy bait [amount]`
 """))
     # msg=""
     # for i in ranks:
@@ -412,19 +412,19 @@ async def buy(ctx, rank=None, amount=None):
     else:
         if rank == "bait":
             if amount == None:
-                if getcoins(ctx.author) >= 50:
+                if getcoins(ctx.author) >= 40:
                     giveitem(ctx.author, "bait", 1)
-                    givecoins(ctx.author, -50)
+                    givecoins(ctx.author, -40)
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought 1 Fish Bait.", colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 50 coins", colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 40 coins", colour=16711680))
             else:
-                if getcoins(ctx.author) >= 50*int(amount):
+                if getcoins(ctx.author) >= 40*int(amount):
                     giveitem(ctx.author, "bait", int(amount))
-                    givecoins(ctx.author, -50*int(amount))
+                    givecoins(ctx.author, -40*int(amount))
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(50*int(amount))), colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(40*int(amount))), colour=16711680))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
