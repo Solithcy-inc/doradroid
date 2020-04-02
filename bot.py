@@ -219,7 +219,7 @@ def getinv(user):
         j = 0
         empty=True
         dict1 = {}
-        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna"}
+        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna", 13:"fishlim"}
         for i in records[0]:
             if j in [0,1]:
                 pass
@@ -373,8 +373,9 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
+    fishlim=getinv(ctx.author)['fishlim']
     await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 40 coins | `dd!buy bait [amount]`
-"""))
+Fish Limit Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`""".format(str(fishlim), place_value(fishlim*100000), str(fishlim+1))))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -430,6 +431,13 @@ async def buy(ctx, rank=None, amount=None):
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
                 else:
                     await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(40*int(amount))), colour=16711680))
+        elif rank == "fishlim":
+            fishlim=getinv(ctx.author)['fishlim']
+            if getcoins(ctx.author) >= fishlim*100000:
+                giveitem(ctx.author, "fishlim", 1)
+                await ctx.channel.send(embed=makeEmbed("Success", "You've bought Fish Limit Lvl {}.".format(str(fishlim)), colour=1441536))
+            else:
+                await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(fishlim*100000)), colour=16711680))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
@@ -473,7 +481,7 @@ async def fishcmd(ctx, rates=None):
             bait=getinv(ctx.author)['bait']
         except:
             bait=0
-        if bait<=0:
+        if bait<=0 and rates != "worth":
             await ctx.channel.send("{}, you have no fish bait. Buy it in the shop!".format(ctx.author.mention))
         else:
             fishing=False
@@ -482,7 +490,44 @@ async def fishcmd(ctx, rates=None):
                 fishing=True
             except:
                 pass
-            if fishing == False or rates=="1":
+            if rates == "max":
+                if ctx.author.id == 330287319749885954:
+                    bait=getinv(ctx.author)['bait']
+                    message = await ctx.channel.send("{0}, ok. Using {1} baits (all of them)".format(ctx.author.mention, str(bait)))
+                    giveitem(ctx.author, "bait", -int(bait))
+                    fishes=[]
+                    for i in range(0, int(bait)):
+                        thefish=fish(ctx)
+                        if thefish != None:
+                            fishes.append(thefish)
+                    amountoffish={"tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
+                    for i in fishes:
+                        amountoffish[i]+=1
+                    msg=""
+                    fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "tuna":"Tuna", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
+                    for i in amountoffish:
+                        if amountoffish[i] == 0:
+                            pass
+                        else:
+                            msg=msg+"**{0}**: {1}\n".format(fishtypes[i], str(amountoffish[i]))
+                    if msg=="":
+                        await message.edit(content="{0}, you caught:\nNothing".format(ctx.author.mention))
+                    else:
+                        await message.edit(content="{1}, you caught:\n{0}".format(msg, ctx.author.mention))
+                else:
+                    await ctx.channel.send("This command is for testing purposes only, and so only the owner can use it.")
+            elif rates == "worth":
+                    message = await ctx.channel.send("{} | Counting fish".format(ctx.author.name))
+                    amount = 0
+                    inv=getinv(ctx.author)
+                    for i in inv:
+                        try:
+                            amount += fishprices[i]*inv[i]
+                        except:
+                            pass
+                    await asyncio.sleep(1)
+                    await message.edit(content="{0} | Your fish would be worth {1} coins.".format(ctx.author.name, place_value(amount)))
+            elif fishing == False or rates=="1":
                 giveitem(ctx.author, "bait", -1)
                 thefish=fish(ctx)
                 if thefish == "cyprinodon":
@@ -508,10 +553,11 @@ async def fishcmd(ctx, rates=None):
                 elif thefish == None:
                     await ctx.channel.send("{0}, you didn't get a bite.".format(ctx.author.mention))
             else:
+                fishlim=getinv(ctx.author)['fishlim']
                 if int(rates)<=0:
                     await ctx.channel.send("{}, you can't fish less than once.".format(ctx.author.mention))
-                elif int(rates)>6:
-                    await ctx.channel.send("{}, you can't fish more than 6 times at once.".format(ctx.author.mention))
+                elif int(rates)>fishlim:
+                    await ctx.channel.send("{0}, your fishing rod only lets you fish {1} fish at a time. Upgrade it at the shop!".format(ctx.author.mention, str(fishlim)))
                 else:
                     bait=getinv(ctx.author)['bait']
                     if bait >= int(rates):
@@ -572,6 +618,8 @@ async def inventory(ctx):
                     msg=msg+"**Cyprinodon Diabolis <:pup:695271125474869359>**: {}\n".format(place_value(inv[i]))
                 elif i == "tuna":
                     msg=msg+"**Tuna <:tuna:695275266762735716>**: {}\n".format(place_value(inv[i]))
+                elif i == "fishlim":
+                    msg=msg+"**Fishing Rod Lvl {} <:rod:695292360157823047>**\n".format(place_value(inv[i]))
                 else:
                     msg=msg+"**__Unknown Item__ :grey_question:**: {}\n".format(place_value(inv[i]))
         await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
