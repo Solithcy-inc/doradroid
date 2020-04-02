@@ -25,9 +25,9 @@ from deck_of_cards import deck_of_cards as doc
 import slotmachine as sm
 #############
 global cursor, whitelist, ranks
-fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddock":10, "siamese":750, "pike":350, "megamouth":3250, "cyprinodon": 150000}
+fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddock":10, "siamese":750, "pike":350, "megamouth":3250, "cyprinodon": 150000, "tuna": 300}
 with open('ranks.json') as json_file:
-        ranks = json.load(json_file)
+    ranks = json.load(json_file)
 whitelist=[330287319749885954]
 db=dc.connect()
 cursor=db.cursor()
@@ -219,7 +219,7 @@ def getinv(user):
         j = 0
         empty=True
         dict1 = {}
-        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon"}
+        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna"}
         for i in records[0]:
             if j in [0,1]:
                 pass
@@ -336,18 +336,23 @@ def fish(ctx):
                         return "goldfish"
                     else:
                         chance=random.randint(1, 100000)
-                        if chance <= 15000:
-                            giveitem(ctx.author, "pike", 1)
-                            return "pike"
+                        if chance <= 12500:
+                            giveitem(ctx.author, "tuna", 1)
+                            return "tuna"
                         else:
                             chance=random.randint(1, 100000)
-                            if chance <= 70000:
-                                types=['cod','carp','haddock']
-                                thetype=random.choice(types)
-                                giveitem(ctx.author, thetype, 1)
-                                return thetype
+                            if chance <= 15000:
+                                giveitem(ctx.author, "pike", 1)
+                                return "pike"
                             else:
-                                return None
+                                chance=random.randint(1, 100000)
+                                if chance <= 70000:
+                                    types=['cod','carp','haddock']
+                                    thetype=random.choice(types)
+                                    giveitem(ctx.author, thetype, 1)
+                                    return thetype
+                                else:
+                                    return None
 
 
 #############
@@ -462,7 +467,7 @@ async def beg(ctx):
 @commands.check(CustomCooldown(1, 12.5, 1, 12.5, commands.BucketType.user, elements=[]))
 async def fishcmd(ctx, rates=None):
     if rates=="rates":
-        await ctx.channel.send("**Cyprinodon Diabolis**: 150,000\n**Psychrolutes Marcidus**: 17,500\n**Megamouth Shark**: 3,250\n**Siamese Fighting Fish**: 750\n**Goldfish**: 500\n**Northern Pike**: 250\n**Haddock, Cod & Carp**: 10")
+        await ctx.channel.send("**Cyprinodon Diabolis**: 150,000\n**Psychrolutes Marcidus**: 17,500\n**Megamouth Shark**: 3,250\n**Siamese Fighting Fish**: 750\n**Goldfish**: 500\n**Tuna**: 300\n**Northern Pike**: 250\n**Haddock, Cod & Carp**: 10")
     else:
         try:
             bait=getinv(ctx.author)['bait']
@@ -498,6 +503,8 @@ async def fishcmd(ctx, rates=None):
                     await ctx.channel.send("{0}, you caught a Cod!".format(ctx.author.mention))
                 elif thefish == "carp":
                     await ctx.channel.send("{0}, you caught a Carp!".format(ctx.author.mention))
+                elif thefish == "tuna":
+                    await ctx.channel.send("{0}, you caught a Tuna!".format(ctx.author.mention))
                 elif thefish == None:
                     await ctx.channel.send("{0}, you didn't get a bite.".format(ctx.author.mention))
             else:
@@ -514,11 +521,11 @@ async def fishcmd(ctx, rates=None):
                             thefish=fish(ctx)
                             if thefish != None:
                                 fishes.append(thefish)
-                        amountoffish={"psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
+                        amountoffish={"tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
                         for i in fishes:
                             amountoffish[i]+=1
                         msg=""
-                        fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
+                        fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "tuna":"Tuna", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
                         for i in amountoffish:
                             if amountoffish[i] == 0:
                                 pass
@@ -544,27 +551,29 @@ async def inventory(ctx):
         for i in inv:
             if inv[i] != 0:
                 if i == "psychrolutes":
-                    msg=msg+"**Psychrolutes Marcidus**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Psychrolutes Marcidus <:marcidus:695267465462284289>**: {}\n".format(place_value(inv[i]))
                 elif i == "megamouth":
-                    msg=msg+"**Megamouth Shark**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Megamouth Shark <:megamouth:695269261660389426>**: {}\n".format(place_value(inv[i]))
                 elif i == "siamese":
-                    msg=msg+"**Siamese Fighting Fish**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Siamese Fighting Fish <:siamese:695267965192372345>**: {}\n".format(place_value(inv[i]))
                 elif i == "goldfish":
-                    msg=msg+"**Goldfish**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Goldfish <:goldfish:695269710677409822>**: {}\n".format(place_value(inv[i]))
                 elif i == "pike":
-                    msg=msg+"**Northern Pike**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Northern Pike <:pike:695270026843783220>**: {}\n".format(place_value(inv[i]))
                 elif i == "cod":
-                    msg=msg+"**Cod**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Cod <:cod:695270426754154526>**: {}\n".format(place_value(inv[i]))
                 elif i == "carp":
-                    msg=msg+"**Carp**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Carp <:carp:695270589023125525>**: {}\n".format(place_value(inv[i]))
                 elif i == "haddock":
-                    msg=msg+"**Haddock**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Haddock <:haddock:695270856204615710>**: {}\n".format(place_value(inv[i]))
                 elif i == "bait":
-                    msg=msg+"**Fish Bait**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Fish Bait <:bait:695266565376966708>**: {}\n".format(place_value(inv[i]))
                 elif i == "cyprinodon":
-                    msg=msg+"**Cyprinodon Diabolis**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Cyprinodon Diabolis <:pup:695271125474869359>**: {}\n".format(place_value(inv[i]))
+                elif i == "tuna":
+                    msg=msg+"**Tuna <:tuna:695275266762735716>**: {}\n".format(place_value(inv[i]))
                 else:
-                    msg=msg+"**__Unknown Item__**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**__Unknown Item__ :grey_question:**: {}\n".format(place_value(inv[i]))
         await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
 
 @bot.command(name='sell')
