@@ -123,6 +123,9 @@ async def on_ready():
 
 #############
 
+def place_value(number):
+    return ("{:,}".format(number))
+
 def makeEmbed(title = "", desc = "", image = None, footer = None, colour = None):
     if colour != None:
         e = discord.Embed(title=title, description=desc, colour=colour, timestamp=datetime.datetime.now())
@@ -306,19 +309,19 @@ def getcoins(user):
 
 def fish(ctx):
     chance=random.randint(1, 100000)
-    if chance <= 5:
+    if chance <= 10:
         print("Cyprinodon Diabolis captured")
         giveitem(ctx.author, "cyprinodon", 1)
         return "cyprinodon"
     else:
         chance=random.randint(1, 100000)
-        if chance <= 150:
+        if chance <= 75:
             print("Psychrolutes Marcidus captured")
             giveitem(ctx.author, "psychrolutes", 1)
             return "psychrolutes"
         else:
             chance=random.randint(1, 100000)
-            if chance <= 1250:
+            if chance <= 750:
                 giveitem(ctx.author, "megamouth", 1)
                 return "megamouth"
             else:
@@ -358,14 +361,14 @@ async def admin(ctx):
 @bot.command(name='bal')
 async def bal(ctx, user: discord.Member = None):
     if user == None:
-        await ctx.channel.send(embed=makeEmbed("Balance", str(getcoins(ctx.author))))
+        await ctx.channel.send(embed=makeEmbed("Balance", place_value((getcoins(ctx.author)))))
     else:
-        await ctx.channel.send(embed=makeEmbed("{}'s Balance".format(user.name), str(getcoins(user))))
+        await ctx.channel.send(embed=makeEmbed("{}'s Balance".format(user.name), place_value(getcoins(user))))
 
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 25 coins | `dd!buy bait [amount]`
+    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 50 coins | `dd!buy bait [amount]`
 """))
     # msg=""
     # for i in ranks:
@@ -409,19 +412,19 @@ async def buy(ctx, rank=None, amount=None):
     else:
         if rank == "bait":
             if amount == None:
-                if getcoins(ctx.author) >= 25:
+                if getcoins(ctx.author) >= 50:
                     giveitem(ctx.author, "bait", 1)
-                    givecoins(ctx.author, -25)
+                    givecoins(ctx.author, -50)
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought 1 Fish Bait.", colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 25 coins", colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 50 coins", colour=16711680))
             else:
-                if getcoins(ctx.author) >= 25*int(amount):
+                if getcoins(ctx.author) >= 50*int(amount):
                     giveitem(ctx.author, "bait", int(amount))
-                    givecoins(ctx.author, -25*int(amount))
+                    givecoins(ctx.author, -50*int(amount))
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(25*int(amount))), colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(50*int(amount))), colour=16711680))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
@@ -434,7 +437,7 @@ async def givemoney(ctx, user: discord.Member = None, amount = None):
             await ctx.channel.send(embed=makeEmbed("Error", "Please specify an amount of doracoins", colour=16711680))
         else:
             givecoins(user, int(amount))
-            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} doracoins".format(user.name, amount), colour=1441536))
+            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} doracoins".format(user.name, place_value(int(amount))), colour=1441536))
     else:
         await ctx.channel.send(embed=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
 
@@ -500,8 +503,8 @@ async def fishcmd(ctx, rates=None):
             else:
                 if int(rates)<=0:
                     await ctx.channel.send("{}, you can't fish less than once.".format(ctx.author.mention))
-                elif int(rates)>8:
-                    await ctx.channel.send("{}, you can't fish more than 8 times at once.".format(ctx.author.mention))
+                elif int(rates)>6:
+                    await ctx.channel.send("{}, you can't fish more than 6 times at once.".format(ctx.author.mention))
                 else:
                     bait=getinv(ctx.author)['bait']
                     if bait >= int(rates):
@@ -541,27 +544,27 @@ async def inventory(ctx):
         for i in inv:
             if inv[i] != 0:
                 if i == "psychrolutes":
-                    msg=msg+"**Psychrolutes Marcidus**: {}\n".format(inv[i])
+                    msg=msg+"**Psychrolutes Marcidus**: {}\n".format(place_value(inv[i]))
                 elif i == "megamouth":
-                    msg=msg+"**Megamouth Shark**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Megamouth Shark**: {}\n".format(place_value(inv[i]))
                 elif i == "siamese":
-                    msg=msg+"**Siamese Fighting Fish**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Siamese Fighting Fish**: {}\n".format(place_value(inv[i]))
                 elif i == "goldfish":
-                    msg=msg+"**Goldfish**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Goldfish**: {}\n".format(place_value(inv[i]))
                 elif i == "pike":
-                    msg=msg+"**Northern Pike**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Northern Pike**: {}\n".format(place_value(inv[i]))
                 elif i == "cod":
-                    msg=msg+"**Cod**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Cod**: {}\n".format(place_value(inv[i]))
                 elif i == "carp":
-                    msg=msg+"**Carp**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Carp**: {}\n".format(place_value(inv[i]))
                 elif i == "haddock":
-                    msg=msg+"**Haddock**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Haddock**: {}\n".format(place_value(inv[i]))
                 elif i == "bait":
-                    msg=msg+"**Fish Bait**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Fish Bait**: {}\n".format(place_value(inv[i]))
                 elif i == "cyprinodon":
-                    msg=msg+"**Cyprinodon Diabolis**: {}\n".format(str(inv[i]))
+                    msg=msg+"**Cyprinodon Diabolis**: {}\n".format(place_value(inv[i]))
                 else:
-                    msg=msg+"**__Unknown Item__**: {}\n".format(str(inv[i]))
+                    msg=msg+"**__Unknown Item__**: {}\n".format(place_value(inv[i]))
         await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
 
 @bot.command(name='sell')
@@ -578,7 +581,7 @@ async def sell(ctx):
             pass
     await asyncio.sleep(1)
     givecoins(ctx.author, amount)
-    await message.edit(content="{0} | You got {1} coins!".format(ctx.author.name, str(amount)))
+    await message.edit(content="{0} | You got {1} coins!".format(ctx.author.name, place_value(amount)))
 
 @bot.command(name='leaderboard', aliases=["lb","top"])
 @commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
@@ -594,24 +597,24 @@ async def leaderboard(ctx):
         j += 1
         if j == 1:
             try:
-                msg=msg+":first_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+                msg=msg+":first_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, place_value(i[2]))
             except:
-                msg=msg+":first_place: `USER LEFT`: {0} doracoins\n".format(str(i[2]))
+                msg=msg+":first_place: `USER LEFT`: {0} doracoins\n".format(place_value(i[2]))
         elif j == 2:
             try:
-                msg=msg+":second_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+                msg=msg+":second_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, place_value(i[2]))
             except:
-                msg=msg+":second_place: `USER LEFT`: {0} doracoins\n".format(str(i[2]))
+                msg=msg+":second_place: `USER LEFT`: {0} doracoins\n".format(place_value(i[2]))
         elif j == 3:
             try:
-                msg=msg+":third_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, str(i[2]))
+                msg=msg+":third_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, place_value(i[2]))
             except:
-                msg=msg+":third_place: `USER LEFT`: {1} doracoins\n".format(str(i[2]))
+                msg=msg+":third_place: `USER LEFT`: {1} doracoins\n".format(place_value(i[2]))
         else:
             try:
-                msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, str(i[2]))
+                msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, place_value(i[2]))
             except:
-                msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), "`USER LEFT`", str(i[2]))
+                msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), "`USER LEFT`", place_value(i[2]))
     await ctx.channel.send(embed=makeEmbed("Leaderboard", msg, footer="sweats"))
 
 @bot.command(name='gamble', aliases=["bet"])
@@ -658,8 +661,8 @@ async def give(ctx, user: discord.Member = None, amount = None):
         elif getcoins(ctx.author) >= int(amount):
             givecoins(ctx.author, -int(amount))
             givecoins(user, int(amount))
-            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} coins".format(user.name, amount), colour=1441536))
+            await ctx.channel.send(embed=makeEmbed("Success", "Gave {0} {1} coins".format(user.name, place_value(int(amount))), colour=1441536))
         else:
-            await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
+            await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(place_value(int(amount))), colour=16711680))
 
 bot.run(TOKEN)
