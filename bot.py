@@ -30,6 +30,7 @@ fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddoc
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
 whitelist=[330287319749885954]
+blacklist=[284294283199250432]
 triviaanswers={}
 db=dc.connect()
 cursor=db.cursor()
@@ -229,7 +230,7 @@ def getinv(user):
         j = 0
         empty=True
         dict1 = {}
-        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna", 13:"fishlim", 14:"job"}
+        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna", 13:"fishlim", 14:"job", 15:"dorafish"}
         for i in records[0]:
             if j in [0,1]:
                 pass
@@ -454,7 +455,10 @@ async def buy(ctx, rank=None, amount=None):
 
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
-    if get(bot.get_guild(412536528561242113).roles, id=416285222452068363) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602930601132033) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602654741495827) in ctx.author.roles or ctx.author.id == 330287319749885954:
+    global blacklist
+    if ctx.author.id in blacklist:
+        await ctx.channel.send(embed=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
+    elif get(bot.get_guild(412536528561242113).roles, id=416285222452068363) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602930601132033) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602654741495827) in ctx.author.roles or ctx.author.id == 330287319749885954:
         if user == None:
             await ctx.channel.send(embed=makeEmbed("Error", "Please specify a member", colour=16711680))
         elif amount == None:
