@@ -654,29 +654,29 @@ async def inventory(ctx):
         for i in inv:
             if inv[i] != 0:
                 if i == "psychrolutes":
-                    msg=msg+"**Psychrolutes Marcidus <:marcidus:695267465462284289>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Psychrolutes Marcidus <:marcidus:695648091906375790>**: {}\n".format(place_value(inv[i]))
                 elif i == "megamouth":
-                    msg=msg+"**Megamouth Shark <:megamouth:695269261660389426>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Megamouth Shark <:megamouth:695648090761199616>**: {}\n".format(place_value(inv[i]))
                 elif i == "siamese":
-                    msg=msg+"**Siamese Fighting Fish <:siamese:695267965192372345>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Siamese Fighting Fish <:siamese:695648091725889558>**: {}\n".format(place_value(inv[i]))
                 elif i == "goldfish":
-                    msg=msg+"**Goldfish <:goldfish:695269710677409822>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Goldfish <:goldfish:695648092011233361>**: {}\n".format(place_value(inv[i]))
                 elif i == "pike":
-                    msg=msg+"**Northern Pike <:pike:695270026843783220>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Northern Pike <:pike:695648091738734592>**: {}\n".format(place_value(inv[i]))
                 elif i == "cod":
-                    msg=msg+"**Cod <:cod:695270426754154526>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Cod <:cod:695648091327692851>**: {}\n".format(place_value(inv[i]))
                 elif i == "carp":
                     msg=msg+"**Carp <:carp:695270589023125525>**: {}\n".format(place_value(inv[i]))
                 elif i == "haddock":
-                    msg=msg+"**Haddock <:haddock:695270856204615710>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Haddock <:haddock:695648091101200494>**: {}\n".format(place_value(inv[i]))
                 elif i == "bait":
-                    msg=msg+"**Fish Bait <:bait:695266565376966708>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Fish Bait <:bait:695648090283049040>**: {}\n".format(place_value(inv[i]))
                 elif i == "cyprinodon":
-                    msg=msg+"**Cyprinodon Diabolis <:pup:695271125474869359>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Cyprinodon Diabolis <:pup:695648092191719434>**: {}\n".format(place_value(inv[i]))
                 elif i == "tuna":
-                    msg=msg+"**Tuna <:tuna:695275266762735716>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Tuna <:tuna:695648089419284571>**: {}\n".format(place_value(inv[i]))
                 elif i == "fishlim":
-                    msg=msg+"**Fishing Rod Lvl {} <:rod:695292360157823047>**\n".format(place_value(inv[i]))
+                    msg=msg+"**Fishing Rod Lvl {} <:rod:695648090723713024>**\n".format(place_value(inv[i]))
                 else:
                     msg=msg+"**__Unknown Item__ :grey_question:**: {}\n".format(place_value(inv[i]))
         await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
