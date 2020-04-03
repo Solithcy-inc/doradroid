@@ -30,7 +30,7 @@ fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddoc
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
 whitelist=[330287319749885954]
-blacklist=[284294283199250432]
+blacklist=[]
 triviaanswers={}
 db=dc.connect()
 cursor=db.cursor()
