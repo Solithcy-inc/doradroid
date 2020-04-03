@@ -24,7 +24,9 @@ from discord.utils import get
 from discord import Webhook, RequestsWebhookAdapter
 from deck_of_cards import deck_of_cards as doc
 import slotmachine as sm
+
 #############
+
 global cursor, whitelist, ranks
 fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddock":10, "siamese":750, "pike":350, "megamouth":3250, "cyprinodon": 150000, "tuna": 300}
 with open('ranks.json') as json_file:
