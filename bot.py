@@ -10,7 +10,9 @@ import json
 import datetime
 import requests
 import time
+import time
 import string
+import praw
 import string
 from discord.ext import tasks
 import asyncio
@@ -27,7 +29,9 @@ import slotmachine as sm
 
 #############
 
-global cursor, whitelist, ranks
+global cursor, whitelist, ranks, reddit, activeitems
+activeitems={}
+reddit = praw.Reddit(client_id='U9RttQtPJc-wOw',client_secret='yQP51k1U2xyKvpCL14ns9pPxXQs',user_agent='DoradroidDiscordBot')
 fishprices = {"psychrolutes":3000, "goldfish":100, "carp":20, "cod":20, "haddock":20, "siamese":250, "pike":30, "megamouth":1000, "cyprinodon": 20000, "tuna": 60}
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
@@ -193,7 +197,7 @@ def givecoins(user, amount):
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
         )
 
-def giveitem(user, item, amount):
+def giveitem(user, item, amount=1):
     global cursor
     # check if user has a doracoins account
     cursor.execute(
@@ -228,7 +232,7 @@ def getinv(user):
         j = 0
         empty=True
         dict1 = {}
-        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna", 13:"fishlim", 14:"job", 15:"dorafish"}
+        dict2 = {0:"", 1:"", 2:"carp", 3:"cod", 4:"bait", 5:"goldfish", 6:"haddock", 7:"megamouth", 8:"pike", 9:"psychrolutes", 10:"siamese", 11:"cyprinodon", 12:"tuna", 13:"fishlim", 14:"job", 15:"dorafish", 16:"clover", 17:"autofish"}
         for i in records[0]:
             if j in [0,1]:
                 pass
@@ -238,11 +242,13 @@ def getinv(user):
                 dict1[dict2[j]]=i
             j+=1
         if empty:
-            return {}
+            giveitem(user, "fishlim", 1)
+            return getinv(user)
         else:
             return dict1
     else:
-        return {}
+        giveitem(user, "rod", 1)
+        return getinv(user)
 
 def checkslots(slot):
     j=""
@@ -316,55 +322,223 @@ def getcoins(user):
     else:
         return 0
 
-def fish(ctx):
-    chance=random.randint(1, 100000)
-    if chance <= 10:
-        print("Cyprinodon Diabolis captured")
-        giveitem(ctx.author, "cyprinodon", 1)
-        return "cyprinodon"
+async def fish(ctx):
+    lucky=False
+    if str(ctx.author.id) in activeitems:
+        if "clover" in activeitems[str(ctx.author.id)]:
+            lucky=True
+        else:
+            lucky=False
     else:
+        lucky=False
+    if lucky==False:
         chance=random.randint(1, 100000)
-        if chance <= 100:
-            print("Psychrolutes Marcidus captured")
-            giveitem(ctx.author, "psychrolutes", 1)
-            return "psychrolutes"
+        if chance <= 10:
+            print("Cyprinodon Diabolis captured")
+            giveitem(ctx.author, "cyprinodon", 1)
+            return "cyprinodon"
         else:
             chance=random.randint(1, 100000)
-            if chance <= 1000:
-                giveitem(ctx.author, "megamouth", 1)
-                return "megamouth"
+            if chance <= 100:
+                print("Psychrolutes Marcidus captured")
+                giveitem(ctx.author, "psychrolutes", 1)
+                return "psychrolutes"
             else:
                 chance=random.randint(1, 100000)
-                if chance <= 3500:
-                    giveitem(ctx.author, "siamese", 1)
-                    return "siamese"
+                if chance <= 1000:
+                    giveitem(ctx.author, "megamouth", 1)
+                    return "megamouth"
                 else:
                     chance=random.randint(1, 100000)
-                    if chance <= 12500:
-                        giveitem(ctx.author, "goldfish", 1)
-                        return "goldfish"
+                    if chance <= 3500:
+                        giveitem(ctx.author, "siamese", 1)
+                        return "siamese"
+                    else:
+                        chance=random.randint(1, 100000)
+                        if chance <= 12500:
+                            giveitem(ctx.author, "goldfish", 1)
+                            return "goldfish"
+                        else:
+                            chance=random.randint(1, 100000)
+                            if chance <= 20000:
+                                giveitem(ctx.author, "tuna", 1)
+                                return "tuna"
+                            else:
+                                chance=random.randint(1, 100000)
+                                if chance <= 35000:
+                                    giveitem(ctx.author, "pike", 1)
+                                    return "pike"
+                                else:
+                                    chance=random.randint(1, 100000)
+                                    if chance <= 70000:
+                                        types=['cod','carp','haddock']
+                                        thetype=random.choice(types)
+                                        giveitem(ctx.author, thetype, 1)
+                                        return thetype
+                                    else:
+                                        return None
+    else:
+        chance=random.randint(1, 100000)
+        if chance <= 20:
+            print("Cyprinodon Diabolis captured")
+            giveitem(ctx.author, "cyprinodon", 1)
+            return "cyprinodon"
+        else:
+            chance=random.randint(1, 100000)
+            if chance <= 200:
+                print("Psychrolutes Marcidus captured")
+                giveitem(ctx.author, "psychrolutes", 1)
+                return "psychrolutes"
+            else:
+                chance=random.randint(1, 100000)
+                if chance <= 2000:
+                    giveitem(ctx.author, "megamouth", 1)
+                    return "megamouth"
+                else:
+                    chance=random.randint(1, 100000)
+                    if chance <= 6000:
+                        giveitem(ctx.author, "siamese", 1)
+                        return "siamese"
                     else:
                         chance=random.randint(1, 100000)
                         if chance <= 20000:
-                            giveitem(ctx.author, "tuna", 1)
-                            return "tuna"
+                            giveitem(ctx.author, "goldfish", 1)
+                            return "goldfish"
                         else:
                             chance=random.randint(1, 100000)
-                            if chance <= 35000:
-                                giveitem(ctx.author, "pike", 1)
-                                return "pike"
+                            if chance <= 30000:
+                                giveitem(ctx.author, "tuna", 1)
+                                return "tuna"
                             else:
                                 chance=random.randint(1, 100000)
-                                if chance <= 70000:
-                                    types=['cod','carp','haddock']
-                                    thetype=random.choice(types)
-                                    giveitem(ctx.author, thetype, 1)
-                                    return thetype
+                                if chance <= 45000:
+                                    giveitem(ctx.author, "pike", 1)
+                                    return "pike"
                                 else:
-                                    return None
+                                    chance=random.randint(1, 100000)
+                                    if chance <= 100000:
+                                        types=['cod','carp','haddock']
+                                        thetype=random.choice(types)
+                                        giveitem(ctx.author, thetype, 1)
+                                        return thetype
+                                    else:
+                                        return None
 
 
 #############
+
+@commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='secret')
+async def secret(ctx):
+    await ctx.channel.send("I'm not here.")
+
+@commands.check(CustomCooldown(1,7.5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='use')
+async def meme(ctx, *, item=None):
+    global activeitems
+    if item == None:
+        await ctx.channel.send(embed=makeEmbed("Error", "Please specify something to use", footer="Jesus Christ isn't that self explanatory", colour=16711680))
+    elif item == "rod":
+        await ctx.channel.send("`dd!fish` exists holy heck bro")
+    elif item == "clover":
+        try:
+            clovers = getinv(ctx.author)['clover']
+        except:
+            clovers = 0
+        if clovers>0:
+            contin=False
+            if str(ctx.author.id) in activeitems:
+                if "clover" in activeitems[str(ctx.author.id)]:
+                    await ctx.channel.send("You already have a clover active")
+                else:
+                    activeitems[str(ctx.author.id)]["clover"]=time.time()+60*10
+                    contin=True
+            else:
+                activeitems[str(ctx.author.id)]={"clover":time.time()+60*10}
+                contin=True
+            if contin:
+                await ctx.channel.send("Because of your 4 leafed clover, you now have a luck boost for the next 10 minutes! This applies to fishing and betting.")
+                giveitem(ctx.author, "clover", -1)
+                await asyncio.sleep(60*10)
+                try:
+                    await ctx.author.send("Your clover has stopped giving you luck.")
+                except:
+                    pass
+                activeitems[str(ctx.author.id)].pop("clover", None)
+        else:
+            await ctx.channel.send("You don't even have a clover bro")
+    elif item == "autofish":
+        try:
+            autofishers = getinv(ctx.author)['autofish']
+        except:
+            autofishers = 0
+        if autofishers>0:
+            contin=False
+            if str(ctx.author.id) in activeitems:
+                if "autofish" in activeitems[str(ctx.author.id)]:
+                    await ctx.channel.send("You already have an auto fisher active")
+                else:
+                    activeitems[str(ctx.author.id)]["autofish"]=time.time()+60*10
+                    contin=True
+            else:
+                activeitems[str(ctx.author.id)]={"autofish":time.time()+60*10}
+                contin=True
+            if contin:
+                await ctx.channel.send("Your auto fisher will fish once every 15 seconds for the next 10 minutes (being affected by luck and without using bait), and ping you when it's finished.")
+                giveitem(ctx.author, "autofish", -1)
+                hascaught=[]
+                for i in range(0,40):
+                    hascaught.append(await fish(ctx))
+                    await asyncio.sleep(15)
+                amountoffish={None:0, "tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
+                for i in hascaught:
+                    amountoffish[i]+=1
+                msg=""
+                fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "tuna":"Tuna", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
+                for i in amountoffish:
+                    if amountoffish[i] == 0:
+                        pass
+                    else:
+                        if i != None:
+                            msg=msg+"**{0}**: {1}\n".format(fishtypes[i], str(amountoffish[i]))
+                await ctx.channel.send("{1}\nI have caught these fish:\n>>> {0}".format(msg,ctx.author.mention))
+                activeitems[str(ctx.author.id)].pop("autofish", None)
+        else:
+            await ctx.channel.send("You don't even have an auto fisher bro")
+    else:
+        await ctx.channel.send(embed=makeEmbed("Error", "`{}` doesn't exist.".format(item), colour=16711680))
+
+@commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='active')
+async def active(ctx):
+    items=None
+    if str(ctx.author.id) in activeitems:
+        items=activeitems[str(ctx.author.id)]
+    if items == None or items == {}:
+        await ctx.channel.send("You have no active items")
+    else:
+        msg=""
+        for i in items:
+            if i == "clover":
+                m, s = divmod(activeitems[str(ctx.author.id)]["clover"]-time.time(), 60)
+                h, m = divmod(m, 60)
+                msg=msg+"**Clover Luck Boost**: {0:.0f}m {1:.0f}s\n".format(m, s)
+            elif i == "autofish":
+                m, s = divmod(activeitems[str(ctx.author.id)]["autofish"]-time.time(), 60)
+                h, m = divmod(m, 60)
+                msg=msg+"**Auto Fisher**: {0:.0f}m {1:.0f}s\n".format(m, s)
+            else:
+                msg=msg+"Unknown item\n"
+        await ctx.channel.send("**__Your active items__**:\n>>> {}".format(msg))
+
+@commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='meme')
+async def meme(ctx):
+    while True:
+        sub = reddit.subreddit(random.choice(['memes', 'dankmemes'])).random()
+        if sub.domain in ["i.redd.it", "i.imgur.com"] and not sub.over_18:
+            break
+    await ctx.channel.send(embed=makeEmbed("{}".format(sub.title), "Score: {0}\n[Image link]({1})".format(place_value(sub.score), sub.url), image=sub.url))
 
 @has_permissions(administrator=True)
 @bot.command(name='admin')
@@ -387,8 +561,11 @@ async def shop(ctx):
     except:
         fishlim=1
         giveitem(ctx.author, "fishlim", 0)
-    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 25 coins | `dd!buy bait [amount]`
-Fishing Rod Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`""".format(str(fishlim+1), place_value(round(1500*(1+1.5)**fishlim)), str(fishlim+1))))
+    await ctx.channel.send(embed=makeEmbed("Shop", """4 Leaved Clover | BE SUPER LUCKY WOW | 4,500 coins | `dd!buy clover`
+Auto Fisher | Basically a slave | 1,250 coins | `dd!buy autofish`
+Fish Bait | Use it to go fishing! | 25 coins | `dd!buy bait [amount]`
+Fishing Rod Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`
+""".format(str(fishlim+1), place_value(round(1500*(1+1.5)**fishlim)), str(fishlim+1))))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -438,12 +615,51 @@ async def buy(ctx, rank=None, amount=None):
                 else:
                     await ctx.channel.send(embed=makeEmbed("Error", "You need to have 25 coins", colour=16711680))
             else:
-                if getcoins(ctx.author) >= 25*int(amount):
-                    giveitem(ctx.author, "bait", int(amount))
-                    givecoins(ctx.author, -25*int(amount))
-                    await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
+                if int(amount)>0:
+                    if getcoins(ctx.author) >= 25*int(amount):
+                        giveitem(ctx.author, "bait", int(amount))
+                        givecoins(ctx.author, -25*int(amount))
+                        await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
+                    else:
+                        await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(25*int(amount)))), colour=16711680))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(25*int(amount)))), colour=16711680))
+                    await ctx.channel.send("Don't try to break me smh")
+        elif rank == "clover":
+            if amount == None or amount == "1":
+                if getcoins(ctx.author) >= 4500:
+                    giveitem(ctx.author, "clover", 1)
+                    givecoins(ctx.author, -4500)
+                    await ctx.channel.send(embed=makeEmbed("Success", "You've bought 1 Clover.", colour=1441536))
+                else:
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 4,500 coins", colour=16711680))
+            else:
+                if int(amount) > 0:
+                    if getcoins(ctx.author) >= 4500*int(amount):
+                        giveitem(ctx.author, "clover", int(amount))
+                        givecoins(ctx.author, -4500*int(amount))
+                        await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Clovers.".format(amount), colour=1441536))
+                    else:
+                        await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(4500*int(amount)))), colour=16711680))
+                else:
+                    await ctx.channel.send("Don't try to break me smh")
+        elif rank == "autofish":
+            if amount == None or amount == "1":
+                if getcoins(ctx.author) >= 1250:
+                    giveitem(ctx.author, "autofish", 1)
+                    givecoins(ctx.author, -1250)
+                    await ctx.channel.send(embed=makeEmbed("Success", "You've bought 1 Auto Fisher.", colour=1441536))
+                else:
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 1,250 coins", colour=16711680))
+            else:
+                if int(amount) > 0:
+                    if getcoins(ctx.author) >= 1250*int(amount):
+                        giveitem(ctx.author, "autofish", int(amount))
+                        givecoins(ctx.author, -1250*int(amount))
+                        await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Auto Fishers.".format(amount), colour=1441536))
+                    else:
+                        await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(1250*int(amount)))), colour=16711680))
+                else:
+                    await ctx.channel.send("Don't try to break me smh")
         elif rank == "fishlim":
             try:
                 fishlim=getinv(ctx.author)['fishlim']
@@ -459,12 +675,14 @@ async def buy(ctx, rank=None, amount=None):
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
+#get(bot.get_guild(412536528561242113).roles, id=416285222452068363) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602930601132033) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602654741495827) in ctx.author.roles or
+
 @bot.command(name='givemoney')
 async def givemoney(ctx, user: discord.Member = None, amount = None):
     global blacklist
     if ctx.author.id in blacklist:
         await ctx.channel.send(embed=makeEmbed("Error", "You are not permitted to use this command", colour=16711680))
-    elif get(bot.get_guild(412536528561242113).roles, id=416285222452068363) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602930601132033) in ctx.author.roles or get(bot.get_guild(412536528561242113).roles, id=412602654741495827) in ctx.author.roles or ctx.author.id == 330287319749885954:
+    elif ctx.author.id == 330287319749885954:
         if user == None:
             await ctx.channel.send(embed=makeEmbed("Error", "Please specify a member", colour=16711680))
         elif amount == None:
@@ -536,7 +754,7 @@ async def beg(ctx):
 @commands.check(CustomCooldown(1, 12.5, 1, 12.5, commands.BucketType.user, elements=[]))
 async def fishcmd(ctx, rates=None):
     if rates=="rates":
-        await ctx.channel.send("**Cyprinodon Diabolis**: 20,000\n**Psychrolutes Marcidus**: 3,000\n**Megamouth Shark**: 1,000\n**Siamese Fighting Fish**: 250\n**Goldfish**: 100\n**Tuna**: 60\n**Northern Pike**: 30**Haddock, Cod & Carp**: 20")
+        await ctx.channel.send("**Cyprinodon Diabolis**: 20,000\n**Psychrolutes Marcidus**: 3,000\n**Megamouth Shark**: 1,000\n**Siamese Fighting Fish**: 250\n**Goldfish**: 100\n**Tuna**: 60\n**Northern Pike**: 30\n**Haddock, Cod & Carp**: 20")
     else:
         try:
             bait=getinv(ctx.author)['bait']
@@ -558,7 +776,7 @@ async def fishcmd(ctx, rates=None):
                     giveitem(ctx.author, "bait", -int(bait))
                     fishes=[]
                     for i in range(0, int(bait)):
-                        thefish=fish(ctx)
+                        thefish=await fish(ctx)
                         if thefish != None:
                             fishes.append(thefish)
                     amountoffish={"tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
@@ -588,9 +806,9 @@ async def fishcmd(ctx, rates=None):
                             pass
                     await asyncio.sleep(1)
                     await message.edit(content="{0} | Your fish would be worth {1} coins.".format(ctx.author.name, place_value(amount)))
-            elif fishing == False or rates=="1":
+            elif fishing == False or int(rates)<=1:
                 giveitem(ctx.author, "bait", -1)
-                thefish=fish(ctx)
+                thefish=await fish(ctx)
                 if thefish == "cyprinodon":
                     await ctx.channel.send(embed=makeEmbed("{}, you caught a Cyprinodon Diabolis! That's **ULTRA** rare!".format(ctx.author.name), image="https://upload.wikimedia.org/wikipedia/commons/3/37/Cyprinodon_diabolis%2C_males.jpg"))
                 elif thefish == "psychrolutes":
@@ -629,7 +847,7 @@ async def fishcmd(ctx, rates=None):
                         giveitem(ctx.author, "bait", -int(rates))
                         fishes=[]
                         for i in range(0, int(rates)):
-                            thefish=fish(ctx)
+                            thefish=await fish(ctx)
                             if thefish != None:
                                 fishes.append(thefish)
                         amountoffish={"tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
@@ -685,6 +903,10 @@ async def inventory(ctx):
                     msg=msg+"**Tuna <:tuna:697073967797895259>**: {}\n".format(place_value(inv[i]))
                 elif i == "fishlim":
                     msg=msg+"**Fishing Rod Lvl {} <:rod:697073970121408532>**\n".format(place_value(inv[i]))
+                elif i == "autofish":
+                    msg=msg+"**Auto Fisher <:rod:697073970121408532>**: {} (`dd!use autofish`)\n".format(place_value(inv[i]))
+                elif i == "clover":
+                    msg=msg+"**4 Leafed Clover <:clover:697088691159564389>**: {} (`dd!use clover`)\n".format(place_value(inv[i]))
                 else:
                     msg=msg+"**__Unknown Item__ :grey_question:**: {}\n".format(place_value(inv[i]))
         await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
@@ -749,6 +971,12 @@ async def gamble(ctx, amount=None):
     elif int(amount) > getcoins(ctx.author):
         await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(str(amount)), colour=16711680))
     else:
+        lucky=False
+        if str(ctx.author.id) in activeitems:
+            if "clover" in activeitems[str(ctx.author.id)]:
+                lucky=True
+            else:
+                lucky=False
         givecoins(ctx.author, -int(amount))
         message = await ctx.channel.send("{0}'s game".format(ctx.author.name))
         deck = doc.DeckOfCards()
@@ -756,19 +984,25 @@ async def gamble(ctx, amount=None):
         card2 = deck.give_random_card()
         suits={0:"♠", 1:"♥", 2:"♦", 3:"♣"}
         values={1:"A", 2:"2", 3:"3", 4:"4", 5:"5", 6:"6", 7:"7", 8:"8", 9:"9", 10:"10", 11:"J", 12:"Q", 13:"K"}
+        if lucky:
+            userval=card.value+2
+            if userval>13:
+                userval=13
+        else:
+            userval=card.value
         await asyncio.sleep(1)
-        await message.edit(content="{1}'s game\nYou: {0}".format(suits[card.suit]+values[card.value],ctx.author.name))
+        await message.edit(content="{1}'s game\nYou: {0}".format(suits[card.suit]+values[userval],ctx.author.name))
         await asyncio.sleep(1)
-        await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+        await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}".format(suits[card.suit]+values[userval],suits[card2.suit]+values[card2.value],ctx.author.name))
         await asyncio.sleep(1)
-        if card.value > card2.value:
-            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You won twice your bet!**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+        if userval > card2.value:
+            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You won twice your bet!**".format(suits[card.suit]+values[userval],suits[card2.suit]+values[card2.value],ctx.author.name))
             givecoins(ctx.author, int(amount)*2)
-        elif card.value < card2.value:
-            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You lost!**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+        elif userval < card2.value:
+            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You lost!**".format(suits[card.suit]+values[userval],suits[card2.suit]+values[card2.value],ctx.author.name))
         else:
             givecoins(ctx.author, int(amount))
-            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You drew! Your coins were refunded.**".format(suits[card.suit]+values[card.value],suits[card2.suit]+values[card2.value],ctx.author.name))
+            await message.edit(content="{2}'s game\nYou: {0}\nDoradroid: {1}\n**You drew! Your coins were refunded.**".format(suits[card.suit]+values[userval],suits[card2.suit]+values[card2.value],ctx.author.name))
 
 @bot.command(name='give', aliases=["share"])
 @commands.check(CustomCooldown(1,10, 1, 0, commands.BucketType.user, elements=[]))
