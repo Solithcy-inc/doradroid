@@ -486,22 +486,23 @@ async def meme(ctx, *, item=None):
             if contin:
                 await ctx.channel.send("Your auto fisher will fish once every 15 seconds for the next 10 minutes (being affected by luck and without using bait), and ping you when it's finished.")
                 giveitem(ctx.author, "autofish", -1)
+                await asyncio.sleep(600)
                 hascaught=[]
                 for i in range(0,40):
                     hascaught.append(await fish(ctx))
-                    await asyncio.sleep(15)
                 amountoffish={None:0, "tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
                 for i in hascaught:
                     amountoffish[i]+=1
                 msg=""
                 fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "tuna":"Tuna", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
-                for i in amountoffish:
+                amountoffishkeys=sorted(amountoffish, key=str.lower)
+                for i in amountoffishkeys:
                     if amountoffish[i] == 0:
                         pass
                     else:
                         if i != None:
                             msg=msg+"**{0}**: {1}\n".format(fishtypes[i], str(amountoffish[i]))
-                await ctx.channel.send("{1}\nI have caught these fish:\n>>> {0}".format(msg,ctx.author.mention))
+                await ctx.channel.send("{1}\nI have caught these fish, and they are now in your inventory:\n>>> {0}".format(msg,ctx.author.mention))
                 activeitems[str(ctx.author.id)].pop("autofish", None)
         else:
             await ctx.channel.send("You don't even have an auto fisher bro")
@@ -784,7 +785,8 @@ async def fishcmd(ctx, rates=None):
                         amountoffish[i]+=1
                     msg=""
                     fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "tuna":"Tuna", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
-                    for i in amountoffish:
+                    amountoffishkeys=sorted(amountoffish, key=str.lower)
+                    for i in amountoffishkeys:
                         if amountoffish[i] == 0:
                             pass
                         else:
@@ -855,7 +857,8 @@ async def fishcmd(ctx, rates=None):
                             amountoffish[i]+=1
                         msg=""
                         fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "tuna":"Tuna", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
-                        for i in amountoffish:
+                        amountoffishkeys=sorted(amountoffish, key=str.lower)
+                        for i in amountoffishkeys:
                             if amountoffish[i] == 0:
                                 pass
                             else:
@@ -877,7 +880,8 @@ async def inventory(ctx):
         await ctx.channel.send(embed=makeEmbed("You don't have anything in your inventory", footer="Fucking pleb"))
     else:
         msg=""
-        for i in inv:
+        invkeys=sorted(inv, key=str.lower)
+        for i in invkeys:
             if inv[i] != 0:
                 if i == "psychrolutes":
                     msg=msg+"**Psychrolutes Marcidus <:marcidus:697073971518242908>**: {}\n".format(place_value(inv[i]))
