@@ -117,7 +117,7 @@ async def on_message(ctx):
         if ctx.content.startswith(prefix):
             await bot.process_commands(ctx)
         else:
-            if ctx.channel.id in [574247398855933963, 694220899246932101, 412670226321244161, 694532375480107100, 695210918518194196]:
+            if ctx.channel.id in [574247398855933963, 694220899246932101, 412670226321244161, 694532375480107100, 695210918518194196, 695645918111727626]:
                 pass
             else:
                 givecoins(ctx.author, random.randint(0,3))
@@ -188,8 +188,6 @@ def givecoins(user, amount):
             "UPDATE doracoins SET coins = {1} WHERE userid = {0};".format(str(user.id),str(int(coins)+amount))
         )
     else:
-        webhook = Webhook.partial(694219649331626075, 'O1LHhL3hwNrFUe2k2HQst_sGIiPbO5J96nu-57Ur8naHe6FAVKey7Xt8owSplSUQcbyJ', adapter=RequestsWebhookAdapter())
-        webhook.send(embed=makeEmbed("New user", "{} made an account".format(user)))
         # user doesn't have an account, make one with the coin balance
         cursor.execute(
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
@@ -214,8 +212,6 @@ def giveitem(user, item, amount):
             "UPDATE inventory SET {2} = {1} WHERE userid = {0};".format(str(user.id),str(int(itemamount)+amount), item)
         )
     else:
-        webhook = Webhook.partial(694219649331626075, 'O1LHhL3hwNrFUe2k2HQst_sGIiPbO5J96nu-57Ur8naHe6FAVKey7Xt8owSplSUQcbyJ', adapter=RequestsWebhookAdapter())
-        webhook.send(embed=makeEmbed("New user", "{} made an inventory".format(user)))
         # user doesn't have an account, make one with the inventory
         cursor.execute(
             "INSERT INTO inventory (userid, {2}) VALUES ({0}, {1});".format(str(user.id),str(amount), item)
@@ -386,7 +382,11 @@ async def bal(ctx, user: discord.Member = None):
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='shop')
 async def shop(ctx):
-    fishlim=getinv(ctx.author)['fishlim']
+    try:
+        fishlim=getinv(ctx.author)['fishlim']
+    except:
+        fishlim=1
+        giveitem(ctx.author, "fishlim", 0)
     await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 40 coins | `dd!buy bait [amount]`
 Fishing Rod Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`""".format(str(fishlim+1), place_value(round(2500*(1+1.5)**fishlim)), str(fishlim+1))))
     # msg=""
@@ -445,7 +445,11 @@ async def buy(ctx, rank=None, amount=None):
                 else:
                     await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(40*int(amount)))), colour=16711680))
         elif rank == "fishlim":
-            fishlim=getinv(ctx.author)['fishlim']
+            try:
+                fishlim=getinv(ctx.author)['fishlim']
+            except:
+                fishlim=1
+                giveitem(ctx.author, "fishlim", 0)
             if getcoins(ctx.author) >= round(2500*(1+1.5)**fishlim):
                 giveitem(ctx.author, "fishlim", 1)
                 givecoins(ctx.author, -round(2500*(1+1.5)**fishlim))
@@ -610,7 +614,11 @@ async def fishcmd(ctx, rates=None):
                 elif thefish == None:
                     await ctx.channel.send("{0}, you didn't get a bite.".format(ctx.author.mention))
             else:
-                fishlim=getinv(ctx.author)['fishlim']
+                try:
+                    fishlim=getinv(ctx.author)['fishlim']
+                except:
+                    fishlim=1
+                    giveitem(ctx.author, "fishlim", 0)
                 if int(rates)<=0:
                     await ctx.channel.send("{}, you can't fish less than once.".format(ctx.author.mention))
                 elif int(rates)>fishlim:
@@ -666,7 +674,7 @@ async def inventory(ctx):
                 elif i == "cod":
                     msg=msg+"**Cod <:cod:695648091327692851>**: {}\n".format(place_value(inv[i]))
                 elif i == "carp":
-                    msg=msg+"**Carp <:carp:695270589023125525>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Carp <:carp:695650555598471178>**: {}\n".format(place_value(inv[i]))
                 elif i == "haddock":
                     msg=msg+"**Haddock <:haddock:695648091101200494>**: {}\n".format(place_value(inv[i]))
                 elif i == "bait":
@@ -723,7 +731,7 @@ async def leaderboard(ctx):
             try:
                 msg=msg+":third_place: {0}: {1} doracoins\n".format(bot.get_user(int(i[1])).name, place_value(i[2]))
             except:
-                msg=msg+":third_place: `USER LEFT`: {1} doracoins\n".format(place_value(i[2]))
+                msg=msg+":third_place: `USER LEFT`: {0} doracoins\n".format(place_value(i[2]))
         else:
             try:
                 msg=msg+"{0}) {1}: {2} doracoins\n".format(str(j), bot.get_user(int(i[1])).name, place_value(i[2]))
