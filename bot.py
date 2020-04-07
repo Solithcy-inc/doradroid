@@ -490,9 +490,10 @@ async def meme(ctx, *, item=None):
                 hascaught=[]
                 for i in range(0,40):
                     hascaught.append(await fish(ctx))
-                amountoffish={None:0, "tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
+                amountoffish={"tuna": 0, "psychrolutes":0, "goldfish":0, "carp":0, "cod":0, "haddock":0, "siamese":0, "pike":0, "megamouth":0, "cyprinodon": 0}
                 for i in hascaught:
-                    amountoffish[i]+=1
+                    if i != None:
+                        amountoffish[i]+=1
                 msg=""
                 fishtypes={"psychrolutes":"Psychrolutes Marcidus :O rare", "goldfish":"Goldfish", "tuna":"Tuna", "carp":"Carp", "cod":"Cod", "haddock":"Haddock", "siamese":"Siamese Fighting Fish", "pike":"Northern Pike", "megamouth":"Megamouth Shark", "cyprinodon": "Cyprinodon Diabolis :OOOO"}
                 amountoffishkeys=sorted(amountoffish, key=str.lower)
@@ -500,8 +501,7 @@ async def meme(ctx, *, item=None):
                     if amountoffish[i] == 0:
                         pass
                     else:
-                        if i != None:
-                            msg=msg+"**{0}**: {1}\n".format(fishtypes[i], str(amountoffish[i]))
+                        msg=msg+"**{0}**: {1}\n".format(fishtypes[i], str(amountoffish[i]))
                 await ctx.channel.send("{1}\nI have caught these fish, and they are now in your inventory:\n>>> {0}".format(msg,ctx.author.mention))
                 activeitems[str(ctx.author.id)].pop("autofish", None)
         else:
@@ -511,26 +511,37 @@ async def meme(ctx, *, item=None):
 
 @commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='active')
-async def active(ctx):
+async def active(ctx, user: discord.Member = None):
     items=None
-    if str(ctx.author.id) in activeitems:
-        items=activeitems[str(ctx.author.id)]
+    if user==None:
+        id=str(ctx.author.id)
+    else:
+        id=str(user.id)
+    if id in activeitems:
+        items=activeitems[id]
     if items == None or items == {}:
-        await ctx.channel.send("You have no active items")
+        if user==None:
+            await ctx.channel.send("You have no active items")
+        else:
+            await ctx.channel.send("{} has no active items".format(user.name))
     else:
         msg=""
         for i in items:
             if i == "clover":
-                m, s = divmod(activeitems[str(ctx.author.id)]["clover"]-time.time(), 60)
+                m, s = divmod(activeitems[id]["clover"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 msg=msg+"**Clover Luck Boost**: {0:.0f}m {1:.0f}s\n".format(m, s)
             elif i == "autofish":
-                m, s = divmod(activeitems[str(ctx.author.id)]["autofish"]-time.time(), 60)
+                m, s = divmod(activeitems[id]["autofish"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 msg=msg+"**Auto Fisher**: {0:.0f}m {1:.0f}s\n".format(m, s)
             else:
                 msg=msg+"Unknown item\n"
-        await ctx.channel.send("**__Your active items__**:\n>>> {}".format(msg))
+        if user==None:
+            await ctx.channel.send("**__Your active items__**:\n>>> {}".format(msg))
+        else:
+            await ctx.channel.send("**__{1}'s active items__**:\n>>> {0}".format(msg, user.name))
+
 
 @commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='meme')
@@ -545,6 +556,19 @@ async def meme(ctx):
 @bot.command(name='admin')
 async def admin(ctx):
     await ctx.channel.send("yes")
+
+@bot.command(name='restart')
+async def restart(ctx):
+    if ctx.author.id!=330287319749885954:
+        await ctx.channel.send("no fuck you man")
+    else:
+        await ctx.channel.send("----------------------------\n\n         **__RESTARTING__**\n\n----------------------------")
+        print("----------------------------")
+        print("")
+        print("RESTARTING")
+        print("")
+        print("----------------------------")
+        os.execl(sys.executable, sys.executable, *sys.argv)
 
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='bal')
@@ -562,10 +586,10 @@ async def shop(ctx):
     except:
         fishlim=1
         giveitem(ctx.author, "fishlim", 0)
-    await ctx.channel.send(embed=makeEmbed("Shop", """4 Leaved Clover | BE SUPER LUCKY WOW | 4,500 coins | `dd!buy clover`
-Auto Fisher | Basically a slave | 1,250 coins | `dd!buy autofish`
-Fish Bait | Use it to go fishing! | 25 coins | `dd!buy bait [amount]`
-Fishing Rod Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`
+    await ctx.channel.send(embed=makeEmbed("Shop", """**4 Leaved Clover** | BE SUPER LUCKY WOW | **4,500 coins** | `dd!buy clover`
+**Auto Fisher** | Basically a slave | **1,250 coins** | `dd!buy autofish`
+**Fish Bait** | Use it to go fishing! | **25 coins** | `dd!buy bait [amount]`
+**Fishing Rod Lvl {0}** | Fish {2} fish at once! | **{1} coins** | `dd!buy fishlim`
 """.format(str(fishlim+1), place_value(round(1500*(1+1.5)**fishlim)), str(fishlim+1))))
     # msg=""
     # for i in ranks:
@@ -874,10 +898,17 @@ async def fishcmd(ctx, rates=None):
 
 @bot.command(name='inventory', aliases=["inv"])
 @commands.check(CustomCooldown(1, 5, 1, 0, commands.BucketType.user, elements=[]))
-async def inventory(ctx):
-    inv = getinv(ctx.author)
+async def inventory(ctx, user: discord.Member = None):
+    if user==None:
+        inv = getinv(ctx.author)
+    else:
+        inv = getinv(user)
+
     if inv == {}:
-        await ctx.channel.send(embed=makeEmbed("You don't have anything in your inventory", footer="Fucking pleb"))
+        if user==None:
+            await ctx.channel.send(embed=makeEmbed("You don't have anything in your inventory", footer="Fucking pleb"))
+        else:
+            await ctx.channel.send(embed=makeEmbed("{1} doesn't have anything in their inventory".format(user.name), footer="Fucking pleb"))
     else:
         msg=""
         invkeys=sorted(inv, key=str.lower)
@@ -913,7 +944,10 @@ async def inventory(ctx):
                     msg=msg+"**4 Leafed Clover <:clover:697088691159564389>**: {} (`dd!use clover`)\n".format(place_value(inv[i]))
                 else:
                     msg=msg+"**__Unknown Item__ :grey_question:**: {}\n".format(place_value(inv[i]))
-        await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
+        if user == None:
+            await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
+        else:
+            await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(user.name), msg))
 
 @bot.command(name='sell')
 @commands.check(CustomCooldown(1,15, 1, 0, commands.BucketType.user, elements=[]))
@@ -979,8 +1013,6 @@ async def gamble(ctx, amount=None):
         if str(ctx.author.id) in activeitems:
             if "clover" in activeitems[str(ctx.author.id)]:
                 lucky=True
-            else:
-                lucky=False
         givecoins(ctx.author, -int(amount))
         message = await ctx.channel.send("{0}'s game".format(ctx.author.name))
         deck = doc.DeckOfCards()
@@ -989,7 +1021,7 @@ async def gamble(ctx, amount=None):
         suits={0:"♠", 1:"♥", 2:"♦", 3:"♣"}
         values={1:"A", 2:"2", 3:"3", 4:"4", 5:"5", 6:"6", 7:"7", 8:"8", 9:"9", 10:"10", 11:"J", 12:"Q", 13:"K"}
         if lucky:
-            userval=card.value+2
+            userval=card.value+3
             if userval>13:
                 userval=13
         else:
