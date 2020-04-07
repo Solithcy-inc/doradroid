@@ -28,7 +28,7 @@ import slotmachine as sm
 #############
 
 global cursor, whitelist, ranks
-fishprices = {"psychrolutes":17500, "goldfish":500, "carp":10, "cod":10, "haddock":10, "siamese":750, "pike":350, "megamouth":3250, "cyprinodon": 150000, "tuna": 300}
+fishprices = {"psychrolutes":3000, "goldfish":100, "carp":20, "cod":20, "haddock":20, "siamese":250, "pike":30, "megamouth":1000, "cyprinodon": 20000, "tuna": 60}
 with open('ranks.json') as json_file:
     ranks = json.load(json_file)
 whitelist=[330287319749885954]
@@ -324,33 +324,33 @@ def fish(ctx):
         return "cyprinodon"
     else:
         chance=random.randint(1, 100000)
-        if chance <= 50:
+        if chance <= 100:
             print("Psychrolutes Marcidus captured")
             giveitem(ctx.author, "psychrolutes", 1)
             return "psychrolutes"
         else:
             chance=random.randint(1, 100000)
-            if chance <= 750:
+            if chance <= 1000:
                 giveitem(ctx.author, "megamouth", 1)
                 return "megamouth"
             else:
                 chance=random.randint(1, 100000)
-                if chance <= 2500:
+                if chance <= 3500:
                     giveitem(ctx.author, "siamese", 1)
                     return "siamese"
                 else:
                     chance=random.randint(1, 100000)
-                    if chance <= 10000:
+                    if chance <= 12500:
                         giveitem(ctx.author, "goldfish", 1)
                         return "goldfish"
                     else:
                         chance=random.randint(1, 100000)
-                        if chance <= 12500:
+                        if chance <= 20000:
                             giveitem(ctx.author, "tuna", 1)
                             return "tuna"
                         else:
                             chance=random.randint(1, 100000)
-                            if chance <= 15000:
+                            if chance <= 35000:
                                 giveitem(ctx.author, "pike", 1)
                                 return "pike"
                             else:
@@ -387,8 +387,8 @@ async def shop(ctx):
     except:
         fishlim=1
         giveitem(ctx.author, "fishlim", 0)
-    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 40 coins | `dd!buy bait [amount]`
-Fishing Rod Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`""".format(str(fishlim+1), place_value(round(2500*(1+1.5)**fishlim)), str(fishlim+1))))
+    await ctx.channel.send(embed=makeEmbed("Shop", """Fish Bait | Use it to go fishing! | 25 coins | `dd!buy bait [amount]`
+Fishing Rod Lvl {0} | Fish {2} fish at once! | {1} coins | `dd!buy fishlim`""".format(str(fishlim+1), place_value(round(1500*(1+1.5)**fishlim)), str(fishlim+1))))
     # msg=""
     # for i in ranks:
     #     msg = msg + "**{0}**: {1} doracoins\n".format(i, ranks[i]["cost"])
@@ -431,31 +431,31 @@ async def buy(ctx, rank=None, amount=None):
     else:
         if rank == "bait":
             if amount == None:
-                if getcoins(ctx.author) >= 40:
+                if getcoins(ctx.author) >= 25:
                     giveitem(ctx.author, "bait", 1)
-                    givecoins(ctx.author, -40)
+                    givecoins(ctx.author, -25)
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought 1 Fish Bait.", colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 40 coins", colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have 25 coins", colour=16711680))
             else:
-                if getcoins(ctx.author) >= 40*int(amount):
+                if getcoins(ctx.author) >= 25*int(amount):
                     giveitem(ctx.author, "bait", int(amount))
-                    givecoins(ctx.author, -40*int(amount))
+                    givecoins(ctx.author, -25*int(amount))
                     await ctx.channel.send(embed=makeEmbed("Success", "You've bought {} Fish Bait.".format(amount), colour=1441536))
                 else:
-                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(40*int(amount)))), colour=16711680))
+                    await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(place_value(int(25*int(amount)))), colour=16711680))
         elif rank == "fishlim":
             try:
                 fishlim=getinv(ctx.author)['fishlim']
             except:
                 fishlim=1
                 giveitem(ctx.author, "fishlim", 0)
-            if getcoins(ctx.author) >= round(2500*(1+1.5)**fishlim):
+            if getcoins(ctx.author) >= round(1500*(1+1.5)**fishlim):
                 giveitem(ctx.author, "fishlim", 1)
-                givecoins(ctx.author, -round(2500*(1+1.5)**fishlim))
+                givecoins(ctx.author, -round(1500*(1+1.5)**fishlim))
                 await ctx.channel.send(embed=makeEmbed("Success", "You've bought Fishing Rod Lvl {}.".format(str(fishlim+1)), colour=1441536))
             else:
-                await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(place_value(round(2500*(1+1.5)**fishlim))), colour=16711680)))
+                await ctx.channel.send(embed=makeEmbed("Error", "You need to have {} coins".format(str(place_value(round(1500*(1+1.5)**fishlim))), colour=16711680)))
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "{} doesn't exist".format(rank), colour=16711680))
 
@@ -536,7 +536,7 @@ async def beg(ctx):
 @commands.check(CustomCooldown(1, 12.5, 1, 12.5, commands.BucketType.user, elements=[]))
 async def fishcmd(ctx, rates=None):
     if rates=="rates":
-        await ctx.channel.send("**Cyprinodon Diabolis**: 150,000    |   0.001%\n**Psychrolutes Marcidus**: 17,500   |   0.05%\n**Megamouth Shark**: 3,250   |   0.75%\n**Siamese Fighting Fish**: 750   |   2.5%\n**Goldfish**: 500    |   10%\n**Tuna**: 300   |   12.5%\n**Northern Pike**: 250   |   15%\n**Haddock, Cod & Carp**: 10    |   70%")
+        await ctx.channel.send("**Cyprinodon Diabolis**: 20,000\n**Psychrolutes Marcidus**: 3,000\n**Megamouth Shark**: 1,000\n**Siamese Fighting Fish**: 250\n**Goldfish**: 100\n**Tuna**: 60\n**Northern Pike**: 30**Haddock, Cod & Carp**: 20")
     else:
         try:
             bait=getinv(ctx.author)['bait']
@@ -662,29 +662,29 @@ async def inventory(ctx):
         for i in inv:
             if inv[i] != 0:
                 if i == "psychrolutes":
-                    msg=msg+"**Psychrolutes Marcidus <:marcidus:695648091906375790>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Psychrolutes Marcidus <:marcidus:697073971518242908>**: {}\n".format(place_value(inv[i]))
                 elif i == "megamouth":
-                    msg=msg+"**Megamouth Shark <:megamouth:695648090761199616>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Megamouth Shark <:megamouth:697073969861230684>**: {}\n".format(place_value(inv[i]))
                 elif i == "siamese":
-                    msg=msg+"**Siamese Fighting Fish <:siamese:695648091725889558>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Siamese Fighting Fish <:siamese:697073971576832060>**: {}\n".format(place_value(inv[i]))
                 elif i == "goldfish":
-                    msg=msg+"**Goldfish <:goldfish:695648092011233361>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Goldfish <:goldfish:697073971824164865>**: {}\n".format(place_value(inv[i]))
                 elif i == "pike":
-                    msg=msg+"**Northern Pike <:pike:695648091738734592>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Northern Pike <:pike:697073971685883964>**: {}\n".format(place_value(inv[i]))
                 elif i == "cod":
-                    msg=msg+"**Cod <:cod:695648091327692851>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Cod <:cod:697073970679251074>**: {}\n".format(place_value(inv[i]))
                 elif i == "carp":
-                    msg=msg+"**Carp <:carp:695650555598471178>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Carp <:carp:697073971816038421>**: {}\n".format(place_value(inv[i]))
                 elif i == "haddock":
-                    msg=msg+"**Haddock <:haddock:695648091101200494>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Haddock <:haddock:697073970217746624>**: {}\n".format(place_value(inv[i]))
                 elif i == "bait":
-                    msg=msg+"**Fish Bait <:bait:695648090283049040>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Fish Bait <:bait:697073969701978112>**: {}\n".format(place_value(inv[i]))
                 elif i == "cyprinodon":
-                    msg=msg+"**Cyprinodon Diabolis <:pup:695648092191719434>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Cyprinodon Diabolis <:pup:697073971803455508>**: {}\n".format(place_value(inv[i]))
                 elif i == "tuna":
-                    msg=msg+"**Tuna <:tuna:695648089419284571>**: {}\n".format(place_value(inv[i]))
+                    msg=msg+"**Tuna <:tuna:697073967797895259>**: {}\n".format(place_value(inv[i]))
                 elif i == "fishlim":
-                    msg=msg+"**Fishing Rod Lvl {} <:rod:695648090723713024>**\n".format(place_value(inv[i]))
+                    msg=msg+"**Fishing Rod Lvl {} <:rod:697073970121408532>**\n".format(place_value(inv[i]))
                 else:
                     msg=msg+"**__Unknown Item__ :grey_question:**: {}\n".format(place_value(inv[i]))
         await ctx.channel.send(embed=makeEmbed("{}'s Inventory".format(ctx.author.name), msg))
