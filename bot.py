@@ -823,7 +823,7 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                     else:
                         activeitems[str(ctx.author.id)]={"attackmove":time.time()+30}
                     await asyncio.sleep(30)
-                    activeitems[str(ctx.author.id)].pop("attackprep", None)
+                    activeitems[str(ctx.author.id)].pop("attackmove", None)
                     amount = random.randint(2,2500)
                     if amount > getcoins(arg2):
                         amount = getcoins(arg2)
@@ -837,6 +837,7 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                     else:
                         activeitems[str(ctx.author.id)]={"attackfin":time.time()+30}
                     await asyncio.sleep(30)
+                    activeitems[str(ctx.author.id)].pop("attackfin", None)
                     givecoins(ctx.author, amount)
                     await ctx.channel.send("{0}, your pet {1} has returned home, and given you the {2} coins it's stolen.".format(ctx.author.mention, types[petinfo["type"]], amount))
                 else:
