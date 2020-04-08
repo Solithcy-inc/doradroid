@@ -7,6 +7,7 @@ import os
 import asyncio
 import sys
 import json
+import typing
 import datetime
 import requests
 import time
@@ -588,7 +589,7 @@ async def active(ctx, user: discord.Member = None):
             if i == "clover":
                 m, s = divmod(activeitems[id]["clover"]-time.time(), 60)
                 h, m = divmod(m, 60)
-                msg=msg+"**Clover Luck Boost**: {0:.0f}m {1:.0f}s\n".format(m, s)
+                msg=msg+"**Clover luck boost**: {0:.0f}m {1:.0f}s\n".format(m, s)
             elif i == "autofish":
                 m, s = divmod(activeitems[id]["autofish"]-time.time(), 60)
                 h, m = divmod(m, 60)
@@ -599,6 +600,24 @@ async def active(ctx, user: discord.Member = None):
                 petinfo=getpet(ctx.author)
                 types={0:"ball"}
                 msg=msg+"**Pet {2} Searching**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
+            elif i == "attackprep":
+                m, s = divmod(activeitems[id]["attackprep"]-time.time(), 60)
+                h, m = divmod(m, 60)
+                petinfo=getpet(ctx.author)
+                types={0:"ball"}
+                msg=msg+"**Pet {2} preparing for attack**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
+            elif i == "attackmove":
+                m, s = divmod(activeitems[id]["attackmove"]-time.time(), 60)
+                h, m = divmod(m, 60)
+                petinfo=getpet(ctx.author)
+                types={0:"ball"}
+                msg=msg+"**Pet {2} going to target's house**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
+            elif i == "attackfin":
+                m, s = divmod(activeitems[id]["attackfin"]-time.time(), 60)
+                h, m = divmod(m, 60)
+                petinfo=getpet(ctx.author)
+                types={0:"ball"}
+                msg=msg+"**Pet {2} coming back home**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
             else:
                 msg=msg+"Unknown item\n"
         if user==None:
@@ -617,11 +636,23 @@ async def meme(ctx):
     await ctx.channel.send(embed=makeEmbed("{}".format(sub.title), "Score: {0}\n[Image link]({1})".format(place_value(sub.score), sub.url), image=sub.url))
 
 @bot.command(name='pet')
-async def admin(ctx, arg=None, arg2=None):
+async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
     global petout, cursor
     types={0:"ball"}
     if arg==None:
-        await ctx.channel.send("You can run the following commands:\n>>> `dd!pet get`\n`dd!pet play`\n`dd!pet search` (costs 2 love points)\n`dd!pet train`\n`dd!pet info`")
+        if getpet(ctx.author) == None:
+            await ctx.channel.send("You can run the following command:\n>>> `dd!pet get`")
+        else:
+            await ctx.channel.send("""You can run the following commands:
+>>> `dd!pet get`
+`dd!pet info`
+
+`dd!pet play` (increases love points)
+`dd!pet train` (increases attack points)
+
+`dd!pet search` (costs 2 love points)
+`dd!pet attack [user]` (costs 7 attack points)
+""")
     elif arg=="info":
         petinfo=getpet(ctx.author)
         if petinfo==None:
@@ -631,6 +662,15 @@ async def admin(ctx, arg=None, arg2=None):
     elif str(ctx.author.id) in activeitems and "search" in activeitems[str(ctx.author.id)]:
         petinfo=getpet(ctx.author)
         await ctx.channel.send("Your pet {0} is currently out searching.".format(types[petinfo["type"]]))
+    elif str(ctx.author.id) in activeitems and "attackprep" in activeitems[str(ctx.author.id)]:
+        petinfo=getpet(ctx.author)
+        await ctx.channel.send("Your pet {0} is currently preparing for attack.".format(types[petinfo["type"]]))
+    elif str(ctx.author.id) in activeitems and "attackmove" in activeitems[str(ctx.author.id)]:
+        petinfo=getpet(ctx.author)
+        await ctx.channel.send("Your pet {0} is currently going to their victim's house.".format(types[petinfo["type"]]))
+    elif str(ctx.author.id) in activeitems and "attackfin" in activeitems[str(ctx.author.id)]:
+            petinfo=getpet(ctx.author)
+            await ctx.channel.send("Your pet {0} is currently on their way home.".format(types[petinfo["type"]]))
     elif arg=="get":
         if arg2==None:
             await ctx.channel.send("You can get the following pets:\n>>> `dd!pet get ball` (500 coins)")
@@ -640,8 +680,9 @@ async def admin(ctx, arg=None, arg2=None):
                 cursor.execute("DELETE FROM pets WHERE userid = {};".format(ctx.author.id))
                 givecoins(ctx.author, -500)
                 givepet(ctx.author, 0)
+                petout[str(ctx.author.id)]={}
                 if petinfo == None:
-                    await ctx.channel.send("You now have a pet ball.")
+                    await ctx.channel.send("You now have a pet ball. You can run more commands now, check them out by running `dd!pet`.")
                 else:
                     await ctx.channel.send("You abandoned your pet {} for a new pet ball.".format(types[petinfo["type"]]))
             else:
@@ -672,9 +713,9 @@ async def admin(ctx, arg=None, arg2=None):
                 updatepet(ctx.author, "love", petinfo["love"]+loveval)
                 if petinfo["love"]+loveval>10:
                     updatepet(ctx.author, "love", 10)
-                    await ctx.channel.send("You and your pet {0} played {1}. Your pet's **love** value is maxed out.".format(types[petinfo["type"]], random.choice(places)))
+                    await ctx.channel.send("You and your pet {0} played {1}. Your pet's **love** points are maxed out.".format(types[petinfo["type"]], random.choice(places)))
                 else:
-                    await ctx.channel.send("You and your pet {0} played {1}. Your pet's **love** value went up by {2}.".format(types[petinfo["type"]], random.choice(places), loveval))
+                    await ctx.channel.send("You and your pet {0} played {1}. Your pet's **love** points went up by {2}.".format(types[petinfo["type"]], random.choice(places), loveval))
     elif arg=="train":
         if str(ctx.author.id) in petout:
             if "attack" in petout[str(ctx.author.id)]:
@@ -694,13 +735,13 @@ async def admin(ctx, arg=None, arg2=None):
                 await ctx.channel.send("You don't have a pet.")
             else:
                 petout[str(ctx.author.id)]["attack"]=time.time()+600
-                attackval=random.randint(1,2)
+                attackval=random.randint(1,3)
                 updatepet(ctx.author, "attack", petinfo["attack"]+attackval)
-                if petinfo["attack"]+loveval>10:
+                if petinfo["attack"]+attackval>10:
                     updatepet(ctx.author, "attack", 10)
-                    await ctx.channel.send("You and your pet {0} trained in the gym. Your pet's **attack** value is maxed out.".format(types[petinfo["type"]], random.choice(places)))
+                    await ctx.channel.send("You and your pet {0} trained in the gym. Your pet's **attack** points are maxed out.".format(types[petinfo["type"]]))
                 else:
-                    await ctx.channel.send("You and your pet {0} trained in the gym. Your pet's **attack** value went up by {1}.".format(types[petinfo["type"]], attackval))
+                    await ctx.channel.send("You and your pet {0} trained in the gym. Your pet's **attack** points went up by {1}.".format(types[petinfo["type"]], attackval))
     elif arg=="search":
         petinfo=getpet(ctx.author)
         if petinfo==None:
@@ -713,27 +754,29 @@ async def admin(ctx, arg=None, arg2=None):
                     if "search" in activeitems[str(ctx.author.id)]:
                         await ctx.channel.send("Your pet is already out searching.")
                     else:
-                        activeitems[str(ctx.author.id)]["search"]=time.time()+10
+                        activeitems[str(ctx.author.id)]["search"]=time.time()+60*5
                 else:
-                    activeitems[str(ctx.author.id)]={"search":time.time()+10}
-                await asyncio.sleep(10)
+                    activeitems[str(ctx.author.id)]={"search":time.time()+60*5}
+                await asyncio.sleep(60*5)
                 activeitems[str(ctx.author.id)].pop("search", None)
                 coins=0
                 items=[]
                 for i in range(0,20):
                     if random.randint(0,10)<=7:
-                        coins+=random.randint(1,100)
-                    elif random.randint(0,15)<=4:
+                        coins+=random.randint(1,150)
+                    elif random.randint(0,15)<=5:
                         items.append(random.choice(['autofish','clover','haddock','carp','cod','haddock','carp','cod','','','','']))
                 amounts={'autofish':0,'clover':0,'haddock':0,'carp':0,'cod':0,'':0}
                 for i in items:
                     amounts[i]+=1
                 msg="**Coins**: {}\n".format(coins)
+                givecoins(ctx.author, coins)
                 for i in amounts:
                     if i == '':
                         pass
                     else:
                         if amounts[i] > 0:
+                            giveitem(ctx.author, i, amounts[i])
                             if i == 'autofish':
                                 msg=msg+"**Autofisher**: {}\n".format(amounts[i])
                             elif i == 'clover':
@@ -751,6 +794,53 @@ async def admin(ctx, arg=None, arg2=None):
                     await ctx.channel.send("Your pet {} got bored of being used for coins and items, so it left you.".format(types[petinfo["type"]]))
                 else:
                     await ctx.channel.send("Your pet {} doesn't love you enough.".format(types[petinfo["type"]]))
+    elif arg=="attack":
+        petinfo=getpet(ctx.author)
+        if petinfo==None:
+            await ctx.channel.send("You don't have a pet.")
+        else:
+            if type(arg2) is str or arg2==None:
+                await ctx.channel.send("Please mention a user")
+            else:
+                if petinfo["attack"]>=7:
+                    updatepet(ctx.author, "attack", petinfo["attack"]-7)
+                    await ctx.channel.send("Your pet {0} is getting ready for attack! It will be back in 5 minutes.".format(types[petinfo["type"]]))
+                    if str(ctx.author.id) in activeitems:
+                        if "attackprep" in activeitems[str(ctx.author.id)]:
+                            await ctx.channel.send("Your pet is already getting ready.")
+                        else:
+                            activeitems[str(ctx.author.id)]["attackprep"]=time.time()+60*5
+                    else:
+                        activeitems[str(ctx.author.id)]={"attackprep":time.time()+60*5}
+                    await asyncio.sleep(300)
+                    activeitems[str(ctx.author.id)].pop("attackprep", None)
+                    await ctx.channel.send("{0}, your pet {1} has finished getting ready, and is now on their way to attack {2}! It'll be there in 30 seconds.".format(ctx.author.mention, types[petinfo["type"]], arg2.name))
+                    if str(ctx.author.id) in activeitems:
+                        if "attackmove" in activeitems[str(ctx.author.id)]:
+                            await ctx.channel.send("Your pet is already on their way.")
+                        else:
+                            activeitems[str(ctx.author.id)]["attackmove"]=time.time()+30
+                    else:
+                        activeitems[str(ctx.author.id)]={"attackmove":time.time()+30}
+                    await asyncio.sleep(30)
+                    activeitems[str(ctx.author.id)].pop("attackprep", None)
+                    amount = random.randint(2,2500)
+                    if amount > getcoins(arg2):
+                        amount = getcoins(arg2)
+                    givecoins(arg2, -amount)
+                    await ctx.channel.send("{0}, your pet {1} is at {2}'s house, has violently attacked them, and stole {3} coins. Your pet is coming back home, it'll be back in 30 seconds.".format(ctx.author.mention, types[petinfo["type"]], arg2.mention, amount))
+                    if str(ctx.author.id) in activeitems:
+                        if "attackfin" in activeitems[str(ctx.author.id)]:
+                            await ctx.channel.send("Your pet is already coming home.")
+                        else:
+                            activeitems[str(ctx.author.id)]["attackfin"]=time.time()+30
+                    else:
+                        activeitems[str(ctx.author.id)]={"attackfin":time.time()+30}
+                    await asyncio.sleep(30)
+                    givecoins(ctx.author, amount)
+                    await ctx.channel.send("{0}, your pet {1} has returned home, and given you the {2} coins it's stolen.".format(ctx.author.mention, types[petinfo["type"]], amount))
+                else:
+                    await ctx.channel.send("Your pet {} isn't strong enough.".format(types[petinfo["type"]]))
 
 
 
