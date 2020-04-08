@@ -763,7 +763,7 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                 items=[]
                 for i in range(0,20):
                     if random.randint(0,10)<=7:
-                        coins+=random.randint(1,150)
+                        coins+=random.randint(1,100)
                     elif random.randint(0,15)<=5:
                         items.append(random.choice(['autofish','clover','haddock','carp','cod','haddock','carp','cod','','','','']))
                 amounts={'autofish':0,'clover':0,'haddock':0,'carp':0,'cod':0,'':0}
