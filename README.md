@@ -1,3 +1,2 @@
 # Doradroid
-Fucking coins.
-yes.
+It's a fucking bot. What do you expect?
