@@ -570,6 +570,65 @@ async def restart(ctx):
         print("----------------------------")
         os.execl(sys.executable, sys.executable, *sys.argv)
 
+@bot.command(name='exit')
+async def exit(ctx):
+    if ctx.author.id!=330287319749885954:
+        await ctx.channel.send("no fuck you man")
+    else:
+        await ctx.channel.send("----------------------------\n\n           **__STOPPING__**\n\n----------------------------")
+        os._exit(0)
+
+@commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='announce')
+async def announce(ctx, *, msg=None):
+    if ctx.author.id in [330287319749885954]:
+        if msg == None:
+            await ctx.channel.send("You didn't specify a message to send.")
+        else:
+            global cursor
+            cursor.execute(
+                "SELECT * FROM doracoins WHERE dms=1"
+            )
+            records=cursor.fetchall()
+            howmany=len(records)
+            confirmmsg=await ctx.channel.send("Sending the following message to {0} people:\n{1}".format(howmany, msg))
+            success=0
+            for i in records:
+                try:
+                    await bot.get_user(int(i[1])).send("**__Announcement from {0}:__**\n\n{1}".format(ctx.author.name, msg))
+                    success+=1
+                except:
+                    pass
+            await confirmmsg.edit(content="Successfully sent the message to {0} out of {1} people.".format(success, howmany))
+    else:
+        await ctx.channel.send("No.")
+
+@commands.check(CustomCooldown(1,30, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='dms')
+async def dms(ctx):
+        global cursor
+        # check if user has a doracoins account
+        cursor.execute(
+            "SELECT userid FROM doracoins WHERE dms=1"
+        )
+        exists=False
+        coins=0
+        for i in cursor.fetchall():
+            if str(i[0]) == str(ctx.author.id):
+                exists=True
+                break
+        if exists:
+            cursor.execute(
+                "UPDATE doracoins SET dms = 0 WHERE userid = {0};".format(str(ctx.author.id))
+            )
+            await ctx.channel.send("Successfully unsubscribed from DM announcements. Run the command again to sign up.")
+        else:
+            givemoney(ctx.author, 0)
+            cursor.execute(
+                "UPDATE doracoins SET dms = 1 WHERE userid = {0};".format(str(ctx.author.id))
+            )
+            await ctx.channel.send("Successfully signed up to DM announcements. Run the command again to unsubscribe.")
+
 @commands.check(CustomCooldown(1,2.5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='bal')
 async def bal(ctx, user: discord.Member = None):
