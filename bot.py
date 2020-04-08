@@ -29,8 +29,9 @@ import slotmachine as sm
 
 #############
 
-global cursor, whitelist, ranks, reddit, activeitems
+global cursor, whitelist, ranks, reddit, activeitems, petout
 activeitems={}
+petout={}
 reddit = praw.Reddit(client_id='U9RttQtPJc-wOw',client_secret='yQP51k1U2xyKvpCL14ns9pPxXQs',user_agent='DoradroidDiscordBot')
 fishprices = {"psychrolutes":3000, "goldfish":100, "carp":20, "cod":20, "haddock":20, "siamese":250, "pike":30, "megamouth":1000, "cyprinodon": 20000, "tuna": 60}
 with open('ranks.json') as json_file:
@@ -143,11 +144,13 @@ async def on_ready():
 def place_value(number):
     return ("{:,}".format(number))
 
-def makeEmbed(title = "", desc = "", image = None, footer = None, colour = None):
+def makeEmbed(title = "", desc = "", image = None, footer = None, colour = None, thumbnail = None):
     if colour != None:
         e = discord.Embed(title=title, description=desc, colour=colour, timestamp=datetime.datetime.now())
     else:
         e = discord.Embed(title=title, description=desc, timestamp=datetime.datetime.now())
+    if thumbnail != None:
+        e.set_thumbnail(url=thumbnail)
     if image != None:
         e.set_image(url=image)
     if footer != None:
@@ -195,6 +198,29 @@ def givecoins(user, amount):
         # user doesn't have an account, make one with the coin balance
         cursor.execute(
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
+        )
+
+def givepet(user, type):
+    global cursor
+    # check if user has a doracoins account
+    cursor.execute(
+        "SELECT userid FROM pets"
+    )
+    exists=False
+    coins=0
+    for i in cursor.fetchall():
+        if str(i[0]) == str(user.id):
+            exists=True
+            break
+    if exists:
+        # user has account, update coin balance
+        cursor.execute(
+            "UPDATE pets SET type = {1} WHERE userid = {0};".format(str(user.id), type)
+        )
+    else:
+        # user doesn't have an account, make one with the coin balance
+        cursor.execute(
+            "INSERT INTO pets (userid, type) VALUES ({0}, {1});".format(str(user.id),str(type))
         )
 
 def giveitem(user, item, amount=1):
@@ -249,6 +275,38 @@ def getinv(user):
     else:
         giveitem(user, "rod", 1)
         return getinv(user)
+
+def getpet(user):
+    global cursor
+    # check if user has a pet account
+    cursor.execute(
+        "SELECT * FROM pets WHERE userid={}".format(str(user.id))
+    )
+    records=cursor.fetchall()
+    if records!=[]:
+        j = 0
+        empty=True
+        dict1 = {}
+        dict2 = {0:"", 1:"", 2:"type", 3:"love", 4:"attack"}
+        for i in records[0]:
+            if j in [0,1]:
+                pass
+            else:
+                dict1[dict2[j]]=i
+            j+=1
+        return dict1
+    else:
+        return None
+
+def updatepet(user, var, amount):
+    global cursor
+    if getpet(user) != None:
+        cursor.execute(
+            "UPDATE pets SET {0} = {1} WHERE userid = {2};".format(var, amount, str(user.id))
+        )
+        return 200
+    else:
+        return None
 
 def checkslots(slot):
     j=""
@@ -521,9 +579,9 @@ async def active(ctx, user: discord.Member = None):
         items=activeitems[id]
     if items == None or items == {}:
         if user==None:
-            await ctx.channel.send("You have no active items")
+            await ctx.channel.send("You have no active things")
         else:
-            await ctx.channel.send("{} has no active items".format(user.name))
+            await ctx.channel.send("{} has no active things".format(user.name))
     else:
         msg=""
         for i in items:
@@ -535,12 +593,18 @@ async def active(ctx, user: discord.Member = None):
                 m, s = divmod(activeitems[id]["autofish"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 msg=msg+"**Auto Fisher**: {0:.0f}m {1:.0f}s\n".format(m, s)
+            elif i == "search":
+                m, s = divmod(activeitems[id]["search"]-time.time(), 60)
+                h, m = divmod(m, 60)
+                petinfo=getpet(ctx.author)
+                types={0:"ball"}
+                msg=msg+"**Pet {2} Searching**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
             else:
                 msg=msg+"Unknown item\n"
         if user==None:
-            await ctx.channel.send("**__Your active items__**:\n>>> {}".format(msg))
+            await ctx.channel.send("**__Your active things__**:\n>>> {}".format(msg))
         else:
-            await ctx.channel.send("**__{1}'s active items__**:\n>>> {0}".format(msg, user.name))
+            await ctx.channel.send("**__{1}'s active things__**:\n>>> {0}".format(msg, user.name))
 
 
 @commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
@@ -551,6 +615,146 @@ async def meme(ctx):
         if sub.domain in ["i.redd.it", "i.imgur.com"] and not sub.over_18:
             break
     await ctx.channel.send(embed=makeEmbed("{}".format(sub.title), "Score: {0}\n[Image link]({1})".format(place_value(sub.score), sub.url), image=sub.url))
+
+@bot.command(name='pet')
+async def admin(ctx, arg=None, arg2=None):
+    global petout, cursor
+    types={0:"ball"}
+    if arg==None:
+        await ctx.channel.send("You can run the following commands:\n>>> `dd!pet get`\n`dd!pet play`\n`dd!pet search` (costs 2 love points)\n`dd!pet train`\n`dd!pet info`")
+    elif arg=="info":
+        petinfo=getpet(ctx.author)
+        if petinfo==None:
+            await ctx.channel.send("You don't have a pet.")
+        else:
+            await ctx.channel.send(embed=makeEmbed("Your pet {}".format(types[petinfo["type"]]), "**Love**: {0}/10\n**Attack**: {1}/10".format(petinfo["love"], petinfo["attack"]), thumbnail="https://www.kindpng.com/picc/b/538-5386211_smiley-ball-png.png"))
+    elif str(ctx.author.id) in activeitems and "search" in activeitems[str(ctx.author.id)]:
+        petinfo=getpet(ctx.author)
+        await ctx.channel.send("Your pet {0} is currently out searching.".format(types[petinfo["type"]]))
+    elif arg=="get":
+        if arg2==None:
+            await ctx.channel.send("You can get the following pets:\n>>> `dd!pet get ball` (500 coins)")
+        elif arg2=="ball":
+            if getcoins(ctx.author)>=500:
+                petinfo=getpet(ctx.author)
+                cursor.execute("DELETE FROM pets WHERE userid = {};".format(ctx.author.id))
+                givecoins(ctx.author, -500)
+                givepet(ctx.author, 0)
+                if petinfo == None:
+                    await ctx.channel.send("You now have a pet ball.")
+                else:
+                    await ctx.channel.send("You abandoned your pet {} for a new pet ball.".format(types[petinfo["type"]]))
+            else:
+                await ctx.channel.send("A pet ball costs 500.")
+        else:
+            await ctx.channel.send("The pet {} doesn't exist.".format(arg2))
+    elif arg=="play":
+        if str(ctx.author.id) in petout:
+            if "love" in petout[str(ctx.author.id)]:
+                cooldown=petout[str(ctx.author.id)]["love"]
+            else:
+                cooldown=0
+        else:
+            petout[str(ctx.author.id)]={}
+            cooldown=0
+        if cooldown>time.time():
+            m, s = divmod(cooldown-time.time(), 60)
+            h, m = divmod(m, 60)
+            await ctx.channel.send("Your pet doesn't want to play. Try again in {0:.0f}m {1:.0f}s.".format(m, s))
+        else:
+            petinfo=getpet(ctx.author)
+            if petinfo==None:
+                await ctx.channel.send("You don't have a pet.")
+            else:
+                petout[str(ctx.author.id)]["love"]=time.time()+600
+                places=["in the skatepark","in the bowling alley","behind the theatre","in the cinema","in the church","on Discord","FoRkNiTe","on Doradroid ||lucky you||","hide and seek","on the computer but ended up hacking NASA accidentally","on GitHub ||somehow||","Spotify and danced to Bitch Lasagna","in prison","with Soli","with Jaer","in the hospital","with COVID-19"]
+                loveval=random.randint(1,2)
+                updatepet(ctx.author, "love", petinfo["love"]+loveval)
+                if petinfo["love"]+loveval>10:
+                    updatepet(ctx.author, "love", 10)
+                    await ctx.channel.send("You and your pet {0} played {1}. Your pet's **love** value is maxed out.".format(types[petinfo["type"]], random.choice(places)))
+                else:
+                    await ctx.channel.send("You and your pet {0} played {1}. Your pet's **love** value went up by {2}.".format(types[petinfo["type"]], random.choice(places), loveval))
+    elif arg=="train":
+        if str(ctx.author.id) in petout:
+            if "attack" in petout[str(ctx.author.id)]:
+                cooldown=petout[str(ctx.author.id)]["attack"]
+            else:
+                cooldown=0
+        else:
+            petout[str(ctx.author.id)]={}
+            cooldown=0
+        if cooldown>time.time():
+            m, s = divmod(cooldown-time.time(), 60)
+            h, m = divmod(m, 60)
+            await ctx.channel.send("Your pet is too tired to train. Try again in {0:.0f}m {1:.0f}s.".format(m, s))
+        else:
+            petinfo=getpet(ctx.author)
+            if petinfo==None:
+                await ctx.channel.send("You don't have a pet.")
+            else:
+                petout[str(ctx.author.id)]["attack"]=time.time()+600
+                attackval=random.randint(1,2)
+                updatepet(ctx.author, "attack", petinfo["attack"]+attackval)
+                if petinfo["attack"]+loveval>10:
+                    updatepet(ctx.author, "attack", 10)
+                    await ctx.channel.send("You and your pet {0} trained in the gym. Your pet's **attack** value is maxed out.".format(types[petinfo["type"]], random.choice(places)))
+                else:
+                    await ctx.channel.send("You and your pet {0} trained in the gym. Your pet's **attack** value went up by {1}.".format(types[petinfo["type"]], attackval))
+    elif arg=="search":
+        petinfo=getpet(ctx.author)
+        if petinfo==None:
+            await ctx.channel.send("You don't have a pet.")
+        else:
+            if petinfo["love"]>=2:
+                updatepet(ctx.author, "love", petinfo["love"]-2)
+                await ctx.channel.send("Your pet {0} has gone searching for coins and items. It will be back in 5 minutes.".format(types[petinfo["type"]]))
+                if str(ctx.author.id) in activeitems:
+                    if "search" in activeitems[str(ctx.author.id)]:
+                        await ctx.channel.send("Your pet is already out searching.")
+                    else:
+                        activeitems[str(ctx.author.id)]["search"]=time.time()+10
+                else:
+                    activeitems[str(ctx.author.id)]={"search":time.time()+10}
+                await asyncio.sleep(10)
+                activeitems[str(ctx.author.id)].pop("search", None)
+                coins=0
+                items=[]
+                for i in range(0,20):
+                    if random.randint(0,10)<=7:
+                        coins+=random.randint(1,100)
+                    elif random.randint(0,15)<=4:
+                        items.append(random.choice(['autofish','clover','haddock','carp','cod','haddock','carp','cod','','','','']))
+                amounts={'autofish':0,'clover':0,'haddock':0,'carp':0,'cod':0,'':0}
+                for i in items:
+                    amounts[i]+=1
+                msg="**Coins**: {}\n".format(coins)
+                for i in amounts:
+                    if i == '':
+                        pass
+                    else:
+                        if amounts[i] > 0:
+                            if i == 'autofish':
+                                msg=msg+"**Autofisher**: {}\n".format(amounts[i])
+                            elif i == 'clover':
+                                msg=msg+"**4 Leaved Clover**: {}\n".format(amounts[i])
+                            elif i == 'haddock':
+                                msg=msg+"**Haddock**: {}\n".format(amounts[i])
+                            elif i == 'carp':
+                                msg=msg+"**Carp**: {}\n".format(amounts[i])
+                            elif i == 'cod':
+                                msg=msg+"**Cod**: {}\n".format(amounts[i])
+                await ctx.channel.send("{0}, your pet {1} has finished searching and has got the following:\n>>> {2}".format(ctx.author.mention, types[petinfo["type"]], msg))
+            else:
+                if random.randint(0,10)<4:
+                    cursor.execute("DELETE FROM pets WHERE userid = {};".format(ctx.author.id))
+                    await ctx.channel.send("Your pet {} got bored of being used for coins and items, so it left you.".format(types[petinfo["type"]]))
+                else:
+                    await ctx.channel.send("Your pet {} doesn't love you enough.".format(types[petinfo["type"]]))
+
+
+
+
 
 @has_permissions(administrator=True)
 @bot.command(name='admin')
@@ -623,7 +827,7 @@ async def dms(ctx):
             )
             await ctx.channel.send("Successfully unsubscribed from DM announcements. Run the command again to sign up.")
         else:
-            givemoney(ctx.author, 0)
+            givecoins(ctx.author, 0)
             cursor.execute(
                 "UPDATE doracoins SET dms = 1 WHERE userid = {0};".format(str(ctx.author.id))
             )
