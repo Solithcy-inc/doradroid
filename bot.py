@@ -201,6 +201,12 @@ def givecoins(user, amount):
             "INSERT INTO doracoins (userid, coins) VALUES ({0}, {1});".format(str(user.id),str(amount))
         )
 
+async def nobreaking():
+    await bot.wait_until_ready()
+    while True:
+        getcoins(bot.get_user(693821066501423246))
+        await asyncio.sleep(60)
+
 def givepet(user, type):
     global cursor
     cursor.execute(
@@ -212,17 +218,13 @@ def givepet(user, type):
         if str(i[0]) == str(user.id):
             exists=True
             break
-    health={0:"50"}
     if exists:
         cursor.execute(
             "UPDATE pets SET type = {1} WHERE userid = {0};".format(str(user.id), type)
         )
-        cursor.execute(
-            "UPDATE pets SET health = {1} WHERE userid = {0};".format(str(user.id), health[type])
-        )
     else:
         cursor.execute(
-            "INSERT INTO pets (userid, type, health) VALUES ({0}, {1}, {2});".format(str(user.id),str(type), health[type])
+            "INSERT INTO pets (userid, type) VALUES ({0}, {1});".format(str(user.id),str(type))
         )
 
 def giveitem(user, item, amount=1):
@@ -573,6 +575,7 @@ async def meme(ctx, *, item=None):
 @bot.command(name='active')
 async def active(ctx, user: discord.Member = None):
     items=None
+    types={0:"ball", 1:"dorami"}
     if user==None:
         id=str(ctx.author.id)
     else:
@@ -599,31 +602,26 @@ async def active(ctx, user: discord.Member = None):
                 m, s = divmod(activeitems[id]["search"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 petinfo=getpet(ctx.author)
-                types={0:"ball"}
                 msg=msg+"**Pet {2} searching**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
             elif i == "attackprep":
                 m, s = divmod(activeitems[id]["attackprep"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 petinfo=getpet(ctx.author)
-                types={0:"ball"}
                 msg=msg+"**Pet {2} preparing for attack**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
             elif i == "attackmove":
                 m, s = divmod(activeitems[id]["attackmove"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 petinfo=getpet(ctx.author)
-                types={0:"ball"}
                 msg=msg+"**Pet {2} going to target's house**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
             elif i == "attackfin":
                 m, s = divmod(activeitems[id]["attackfin"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 petinfo=getpet(ctx.author)
-                types={0:"ball"}
                 msg=msg+"**Pet {2} coming back home**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
             elif i == "defend":
                 m, s = divmod(activeitems[id]["defend"]-time.time(), 60)
                 h, m = divmod(m, 60)
                 petinfo=getpet(ctx.author)
-                types={0:"ball"}
                 msg=msg+"**Pet {2} defending**: {0:.0f}m {1:.0f}s\n".format(m, s, types[petinfo["type"]])
             else:
                 msg=msg+"Unknown item\n"
@@ -645,7 +643,7 @@ async def meme(ctx):
 @bot.command(name='pet')
 async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
     global petout, cursor
-    types={0:"ball"}
+    types={0:"ball", 1:"dorami"}
     if arg==None:
         if getpet(ctx.author) == None:
             await ctx.channel.send("You can run the following command:\n>>> `dd!pet get`")
@@ -667,7 +665,10 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
         if petinfo==None:
             await ctx.channel.send("You don't have a pet.")
         else:
-            await ctx.channel.send(embed=makeEmbed("Your pet {}".format(types[petinfo["type"]]), "**Love**: {0}/10\n**Attack**: {1}/10\n**Defence**: {2}/10\n**Health**: {3}".format(petinfo["love"], petinfo["attack"], petinfo["defence"], petinfo["health"]), thumbnail="https://www.kindpng.com/picc/b/538-5386211_smiley-ball-png.png"))
+            if petinfo["type"]==0:
+                await ctx.channel.send(embed=makeEmbed("Your pet {}".format(types[petinfo["type"]]), "**Love**: {0}/10\n**Attack**: {1}/10\n**Defence**: {2}/10\n**Health**: {3}".format(petinfo["love"], petinfo["attack"], petinfo["defence"], petinfo["health"]), thumbnail="https://www.kindpng.com/picc/b/538-5386211_smiley-ball-png.png"))
+            elif petinfo["type"]==1:
+                await ctx.channel.send(embed=makeEmbed("Your pet {}".format(types[petinfo["type"]]), "**Love**: {0}/10\n**Attack**: {1}/10\n**Defence**: {2}/10\n**Health**: {3}".format(petinfo["love"], petinfo["attack"], petinfo["defence"], petinfo["health"]), thumbnail="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/9038defb-5494-46f2-a66d-e84678fbfa33/dc4xhsh-6b2092f9-3c11-461e-a644-5fb64988b975.png/v1/fill/w_580,h_962,strp/dorami_poses_by_kaylor2013_dc4xhsh-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9OTYyIiwicGF0aCI6IlwvZlwvOTAzOGRlZmItNTQ5NC00NmYyLWE2NmQtZTg0Njc4ZmJmYTMzXC9kYzR4aHNoLTZiMjA5MmY5LTNjMTEtNDYxZS1hNjQ0LTVmYjY0OTg4Yjk3NS5wbmciLCJ3aWR0aCI6Ijw9NTgwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0._HvijLXW35tUH1B3Zd-CvvzBLRrtNquePo9MrT3Nn8I"))
     elif str(ctx.author.id) in activeitems and "search" in activeitems[str(ctx.author.id)]:
         petinfo=getpet(ctx.author)
         await ctx.channel.send("Your pet {0} is currently out searching.".format(types[petinfo["type"]]))
@@ -685,13 +686,14 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
             await ctx.channel.send("Your pet {0} is currently defending you.".format(types[petinfo["type"]]))
     elif arg=="get":
         if arg2==None:
-            await ctx.channel.send("You can get the following pets:\n>>> `dd!pet get ball` (500 coins)")
+            await ctx.channel.send("You can get the following pets:\n>>> `dd!pet get ball` | 50 health | 500 coins\n`dd!pet get dorami` | 60 health | 1,000 coins\n")
         elif arg2=="ball":
             if getcoins(ctx.author)>=500:
                 petinfo=getpet(ctx.author)
                 cursor.execute("DELETE FROM pets WHERE userid = {};".format(ctx.author.id))
                 givecoins(ctx.author, -500)
                 givepet(ctx.author, 0)
+                updatepet(ctx.author, "health", 50)
                 petout[str(ctx.author.id)]={}
                 if petinfo == None:
                     await ctx.channel.send("You now have a pet ball. You can run more commands now, check them out by running `dd!pet`.")
@@ -699,6 +701,20 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                     await ctx.channel.send("You abandoned your pet {} for a new pet ball.".format(types[petinfo["type"]]))
             else:
                 await ctx.channel.send("A pet ball costs 500.")
+        elif arg2=="dorami":
+            if getcoins(ctx.author)>=1000:
+                petinfo=getpet(ctx.author)
+                cursor.execute("DELETE FROM pets WHERE userid = {};".format(ctx.author.id))
+                givecoins(ctx.author, -1000)
+                givepet(ctx.author, 1)
+                updatepet(ctx.author, "health", 60)
+                petout[str(ctx.author.id)]={}
+                if petinfo == None:
+                    await ctx.channel.send("You now have a pet dorami. You can run more commands now, check them out by running `dd!pet`.")
+                else:
+                    await ctx.channel.send("You abandoned your pet {} for a new pet dorami.".format(types[petinfo["type"]]))
+            else:
+                await ctx.channel.send("A pet dorami costs 1,000.")
         else:
             await ctx.channel.send("The pet {} doesn't exist.".format(arg2))
     elif arg=="play":
@@ -871,8 +887,8 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                         victimhealth=victimpetinfo["health"]
                         userhealth=petinfo["health"]
                         await asyncio.sleep(1)
-                        msg=msg+"> **{0}'s pet's health: {1}**\n".format(ctx.author.name, userhealth)
-                        msg=msg+"> **{0}'s pet's health: {1}**\n".format(arg2.name, victimhealth)
+                        msg=msg+"> **{0}'s pet {2}'s health: {1}**\n".format(ctx.author.name, userhealth, types[petinfo["type"]])
+                        msg=msg+"> **{0}'s pet {2}'s health: {1}**\n".format(arg2.name, victimhealth, types[petinfo["type"]])
                         await themessage.edit(content=msg)
                         while True:
                             await asyncio.sleep(1)
@@ -880,9 +896,13 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                                 damage=random.randint(-3,10)
                                 if damage <= 0:
                                     msg=msg+"> **{0}'s pet** missed. Remaining health: **{1}**\n".format(ctx.author.name, victimhealth)
+                                    if len(msg)>2000:
+                                        msg="> **{0}'s pet** missed. Remaining health: **{1}**\n".format(ctx.author.name, victimhealth)
                                 else:
                                     victimhealth+=-damage
                                     msg=msg+"> **{0}'s pet** dealt **{1}** damage to {2}'s pet. Remaining health: **{3}**\n".format(ctx.author.name, damage, arg2.name, victimhealth)
+                                    if len(msg)>2000:
+                                        msg="> **{0}'s pet** dealt **{1}** damage to {2}'s pet. Remaining health: **{3}**\n".format(ctx.author.name, damage, arg2.name, victimhealth)
                             else:
                                 break
                             await themessage.edit(content=msg)
@@ -891,14 +911,18 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                                 damage=random.randint(-3,10)
                                 if damage <= 0:
                                     msg=msg+"> **{0}'s pet** missed. Remaining health: **{1}**\n".format(arg2.name, userhealth)
+                                    if len(msg)>2000:
+                                        msg="> **{0}'s pet** missed. Remaining health: **{1}**\n".format(arg2.name, userhealth)
                                 else:
                                     userhealth+=-damage
                                     msg=msg+"> **{2}'s pet** dealt {1} damage to {0}'s pet. Remaining health: **{3}**\n".format(ctx.author.name, damage, arg2.name, userhealth)
+                                    if len(msg)>2000:
+                                        msg="> **{2}'s pet** dealt {1} damage to {0}'s pet. Remaining health: **{3}**\n".format(ctx.author.name, damage, arg2.name, userhealth)
                             else:
                                 break
                             await themessage.edit(content=msg)
                         if userhealth<=0:
-                            msg=msg+"> \n> __**{0}'s pet died.**__\n".format(ctx.author.name)
+                            msg="> \n> __**{0}'s pet died.**__\n".format(ctx.author.name)
                             cursor.execute("DELETE FROM pets WHERE userid = {};".format(ctx.author.id))
                             petout[str(ctx.author.id)]={}
                             await themessage.edit(content=msg)
@@ -906,7 +930,7 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
                             await asyncio.sleep(1)
                             await themessage.edit(content=msg)
                         else:
-                            msg=msg+"> \n> __**{0}'s pet died.**__\n".format(arg2.name)
+                            msg="> \n> __**{0}'s pet died.**__\n".format(arg2.name)
                             cursor.execute("DELETE FROM pets WHERE userid = {};".format(arg2.id))
                             petout[str(arg2.id)]={}
                             await themessage.edit(content=msg)
@@ -1540,4 +1564,5 @@ async def give(ctx, user: discord.Member = None, amount = None):
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(place_value(int(amount))), colour=16711680))
 
+bot.loop.create_task(nobreaking())
 bot.run(TOKEN)
