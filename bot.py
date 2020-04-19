@@ -9,6 +9,7 @@ import sys
 import json
 import typing
 import datetime
+import base64
 import requests
 import time
 import time
@@ -229,17 +230,24 @@ def givepet(user, type):
 
 def giveitem(user, item, amount=1):
     global cursor
+    itemamount=0
     # check if user has a doracoins account
-    cursor.execute(
-        "SELECT userid, {} FROM inventory".format(item)
-    )
+    try:
+        cursor.execute(
+            "SELECT userid, {} FROM inventory".format(item)
+        )
+    except:
+        itemamount=None
     exists=False
     coins=0
     for i in cursor.fetchall():
         if str(i[0]) == str(user.id):
             exists=True
-            itemamount=i[1]
+            if itemamount != None:
+                itemamount=i[1]
             break
+    if itemamount==None:
+        itemamount=0
     if exists:
         # user has account, update inventory
         cursor.execute(
@@ -250,6 +258,21 @@ def giveitem(user, item, amount=1):
         cursor.execute(
             "INSERT INTO inventory (userid, {2}) VALUES ({0}, {1});".format(str(user.id),str(amount), item)
         )
+
+def getstats(user):
+    cursor.execute(
+        "SELECT gdid FROM doracoins WHERE userid={}".format(str(user.id))
+    )
+    records=cursor.fetchall()
+    if records==[]:
+        return None
+    elif str(records[0][0])=='0':
+        return None
+    else:
+        req=requests.post("http://www.boomlings.com/database/getGJUserInfo20.php", data={'gameVersion':'21','binaryVersion':'35','targetAccountID':str(records[0][0]), 'secret':'Wmfd2893gb7', 'gdw':'0'})
+        userinfo=req.text.split(":")
+        print(userinfo)
+        return {"stars":userinfo[13], "usercoins":userinfo[7], "demons":userinfo[17], "cp":userinfo[19], "coins":userinfo[5], "rank":userinfo[47], "diamonds":userinfo[15]}
 
 def getinv(user):
     global cursor
@@ -631,6 +654,157 @@ async def active(ctx, user: discord.Member = None):
             await ctx.channel.send("**__{1}'s active things__**:\n>>> {0}".format(msg, user.name))
 
 
+@commands.check(CustomCooldown(1,2, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='gd')
+async def gd(ctx, arg=None, arg2=None):
+    if arg==None:
+        await ctx.channel.send("You can run the following command:\n>>> `dd!gd leaderboard`")
+    elif arg in ["leaderboard", "lb"]:
+        if arg2==None:
+            await ctx.channel.send("You can run the following commands:\n>>> `dd!gd {0} coins`\n`dd!gd {0} cp`\n`dd!gd {0} demons`\n`dd!gd {0} rank`\n`dd!gd {0} stars`\n`dd!gd {0} usercoins`\n".format(arg))
+        elif arg2=="usercoins":
+            cursor.execute("SELECT userid FROM doracoins WHERE gdid!=0;")
+            records=cursor.fetchall()
+            userstats={}
+            for i in records:
+                userstats[str(i[0])]=getstats(bot.get_user(int(i[0])))["usercoins"]
+            j=0
+            message=""
+            for i in sorted(userstats, key=userstats.get, reverse=True):
+                j+=1
+                message=message+"{0}) **{1}**: {2} User Coins\n".format(j, bot.get_user(int(i)).name, userstats[i])
+            await ctx.channel.send(embed=makeEmbed("User Coins Leaderboard", message))
+        elif arg2=="stars":
+            cursor.execute("SELECT userid FROM doracoins WHERE gdid!=0;")
+            records=cursor.fetchall()
+            userstats={}
+            for i in records:
+                userstats[str(i[0])]=getstats(bot.get_user(int(i[0])))["stars"]
+            j=0
+            message=""
+            for i in sorted(userstats, key=userstats.get, reverse=True):
+                j+=1
+                message=message+"{0}) **{1}**: {2} Stars\n".format(j, bot.get_user(int(i)).name, userstats[i])
+            await ctx.channel.send(embed=makeEmbed("Stars Leaderboard", message))
+        elif arg2=="demons":
+            cursor.execute("SELECT userid FROM doracoins WHERE gdid!=0;")
+            records=cursor.fetchall()
+            userstats={}
+            for i in records:
+                userstats[str(i[0])]=getstats(bot.get_user(int(i[0])))["demons"]
+            j=0
+            message=""
+            for i in sorted(userstats, key=userstats.get, reverse=True):
+                j+=1
+                message=message+"{0}) **{1}**: {2} Demons\n".format(j, bot.get_user(int(i)).name, userstats[i])
+            await ctx.channel.send(embed=makeEmbed("Demons Leaderboard", message))
+        elif arg2=="cp":
+            cursor.execute("SELECT userid FROM doracoins WHERE gdid!=0;")
+            records=cursor.fetchall()
+            userstats={}
+            for i in records:
+                userstats[str(i[0])]=getstats(bot.get_user(int(i[0])))["cp"]
+            j=0
+            message=""
+            for i in sorted(userstats, key=userstats.get, reverse=True):
+                j+=1
+                message=message+"{0}) **{1}**: {2} CP\n".format(j, bot.get_user(int(i)).name, userstats[i])
+            await ctx.channel.send(embed=makeEmbed("Creator Points Leaderboard", message))
+        elif arg2=="coins":
+            cursor.execute("SELECT userid FROM doracoins WHERE gdid!=0;")
+            records=cursor.fetchall()
+            userstats={}
+            for i in records:
+                userstats[str(i[0])]=getstats(bot.get_user(int(i[0])))["coins"]
+            j=0
+            message=""
+            for i in sorted(userstats, key=userstats.get, reverse=True):
+                j+=1
+                message=message+"{0}) **{1}**: {2} Coins\n".format(j, bot.get_user(int(i)).name, userstats[i])
+            await ctx.channel.send(embed=makeEmbed("Official Coins Leaderboard", message))
+        elif arg2=="rank":
+            cursor.execute("SELECT userid FROM doracoins WHERE gdid!=0;")
+            records=cursor.fetchall()
+            userstats={}
+            for i in records:
+                userstats[str(i[0])]=getstats(bot.get_user(int(i[0])))["rank"]
+            j=0
+            message=""
+            for i in sorted(userstats, key=userstats.get):
+                j+=1
+                if userstats[i]!="0":
+                    message=message+"{0}) **{1}**: Rank {2}\n".format(j, bot.get_user(int(i)).name, userstats[i])
+                else:
+                    pass
+            if message=="":
+                message="Nobody with a linked account is on the leaderboard."
+            await ctx.channel.send(embed=makeEmbed("GD Rank Leaderboard", message))
+        else:
+            await ctx.channel.send("There isn't a leaderboard for {}".format(arg2))
+
+@commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='unlink')
+async def unlink(ctx, arg=None):
+    givecoins(ctx.author, 0)
+    cursor.execute("SELECT gdid FROM doracoins WHERE userid={};".format(ctx.author.id))
+    gdid=cursor.fetchall()[0][0]
+    if str(gdid)=="0":
+        print(gdid)
+        await ctx.channel.send("You don't have an account linked.")
+    else:
+        cursor.execute("UPDATE doracoins SET gdid = {1} WHERE userid = {0};".format(ctx.author.id, '0'))
+        await ctx.channel.send("Your Geometry Dash account has been unlinked.")
+
+
+@commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
+@bot.command(name='link')
+async def link(ctx, arg=None):
+    if arg == None:
+        await ctx.channel.send("Please send a message to `doradroid` containing `doradroid_auth` on Geometry Dash with your account, and then run `dd!link YourAccountName`. If you need help, watch this video: <https://youtu.be/Q-v_jAVffRM>.")
+        return
+    givecoins(ctx.author, 0)
+    cursor.execute("SELECT gdid FROM doracoins WHERE userid={};".format(ctx.author.id))
+    gdid=cursor.fetchall()[0][0]
+    if str(gdid)!="0":
+        print(gdid)
+        await ctx.channel.send("You already have an account linked.")
+        return
+    vars={'gameVersion':'21', 'binaryVersion':'35', 'secret':'Wmfd2893gb7', 'total':'0', 'page':'0', 'str':arg}
+    req=requests.post('http://www.boomlings.com/database/getGJUsers20.php', data=vars)
+    userinfo=req.text.split(":")
+    vars={'gameVersion':'21', 'binaryVersion':'35', 'gjp':'ZllRV0RXWFID', 'secret':'Wmfd2893gb7', 'gdw':'0', 'page':'0', 'total':'0', 'accountID':'13602169'}
+    req=requests.post("http://www.boomlings.com/database/getGJMessages20.php", data=vars)
+    usermsgs=req.text.split("|")
+    endusermsgs=[]
+    for i in usermsgs:
+        endusermsgs.append(i.split(":"))
+    msgsent=False
+    for i in endusermsgs:
+        try:
+            if i[1].lower()==arg:
+                base64_message = i[9]
+                base64_bytes = base64_message.encode('ascii')
+                message_bytes = base64.b64decode(base64_bytes)
+                message = message_bytes.decode('ascii')
+                if message=="doradroid_auth":
+                    vars={'gameVersion':'21', 'binaryVersion':'35', 'gjp':'ZllRV0RXWFID', 'secret':'Wmfd2893gb7', 'gdw':'0', 'messageID':i[7], 'accountID':'13602169'}
+                    req=requests.post("http://www.boomlings.com/database/deleteGJMessages20.php", data=vars)
+                    msgsent=True
+                    break
+                else:
+                    message=None
+        except:
+            break
+    cursor.execute("SELECT * FROM doracoins WHERE gdid={};".format(userinfo[21]))
+    if len(cursor.fetchall())>0:
+        await ctx.channel.send(embed=makeEmbed("Error", "The account {} is already linked to an account".format(userinfo[1])))
+    else:
+        if msgsent != True:
+            await ctx.channel.send("Please send a message to `doradroid` containing `doradroid_auth` on Geometry Dash with your account. If you need help, watch this video: <https://youtu.be/Q-v_jAVffRM>.")
+        else:
+            await ctx.channel.send("The account {0} has been linked! The message has been deleted, and you'll need to send it again to re-link your account.".format(userinfo[1]))
+            cursor.execute("UPDATE doracoins SET gdid = {1} WHERE userid = {0};".format(ctx.author.id, userinfo[21]))
+
 @commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='meme')
 async def meme(ctx):
@@ -656,7 +830,7 @@ async def pet(ctx, arg=None, arg2:typing.Union[discord.Member, str]=None):
 `dd!pet train` (increases attack points)
 `dd!pet karate` (increases defence points)
 
-`dd!pet search` (costs 3 love points)
+`dd!pet search` (costs 4 love points)
 `dd!pet attack [user]` (costs 7 attack points)
 `dd!pet defend` (costs 6 defence points)
 """)
@@ -1564,5 +1738,7 @@ async def give(ctx, user: discord.Member = None, amount = None):
         else:
             await ctx.channel.send(embed=makeEmbed("Error", "You don't have {} coins".format(place_value(int(amount))), colour=16711680))
 
+
+# cursor.execute("UPDATE doracoins SET gdid = {1} WHERE userid = {0};".format("330287319749885954", "0"))
 bot.loop.create_task(nobreaking())
 bot.run(TOKEN)
