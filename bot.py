@@ -814,15 +814,15 @@ async def unlink(ctx, arg=None):
 @commands.check(CustomCooldown(1,5, 1, 0, commands.BucketType.user, elements=[]))
 @bot.command(name='link')
 async def link(ctx, arg=None):
-    if arg == None:
-        await ctx.channel.send("Please send a message to `doradroid` with the subject and message as `doradroid_auth` on Geometry Dash with the account you'd like linked, and then run `dd!link YourAccountName`. If you need help, watch this video: <https://youtu.be/Q-v_jAVffRM>.")
-        return
     givecoins(ctx.author, 0)
     cursor.execute("SELECT gdid FROM doracoins WHERE userid={};".format(ctx.author.id))
     gdid=cursor.fetchall()[0][0]
     if str(gdid)!="0":
         print(gdid)
-        await ctx.channel.send("You already have an account linked.")
+        await ctx.channel.send("You already have an account linked. To unlink your account, run `dd!unlink`.")
+        return
+    if arg == None:
+        await ctx.channel.send("Please send a message to `doradroid` with the subject and message as `doradroid_auth` on Geometry Dash with the account you'd like linked, and then run `dd!link YourAccountName`. If you need help, watch this video: <https://youtu.be/Q-v_jAVffRM>.")
         return
     vars={'gameVersion':'21', 'binaryVersion':'35', 'secret':'Wmfd2893gb7', 'total':'0', 'page':'0', 'str':arg}
     req=requests.post('http://www.boomlings.com/database/getGJUsers20.php', data=vars)
@@ -855,7 +855,7 @@ async def link(ctx, arg=None):
         await ctx.channel.send(embed=makeEmbed("Error", "The account {} is already linked to an account".format(userinfo[1])))
     else:
         if msgsent != True:
-            await ctx.channel.send("Please send a message to `doradroid` containing `doradroid_auth` on Geometry Dash with your account. If you need help, watch this video: <https://youtu.be/Q-v_jAVffRM>.")
+            await ctx.channel.send("Please send a message to `doradroid` with the subject and message as `doradroid_auth` on Geometry Dash with the account you'd like linked, and then run `dd!link YourAccountName`. If you need help, watch this video: <https://youtu.be/Q-v_jAVffRM>.")
         else:
             await ctx.channel.send("The account {0} has been linked! The message has been deleted, and you'll need to send it again to re-link your account.".format(userinfo[1]))
             cursor.execute("UPDATE doracoins SET gdid = {1} WHERE userid = {0};".format(ctx.author.id, userinfo[21]))
